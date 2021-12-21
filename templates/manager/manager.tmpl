@@ -1,0 +1,67 @@
+package {{.Lower}}
+
+import (
+	"encoding/json"{{.ManagerTime}}
+
+	g "github.com/Jeffail/gabs"
+	ae "{{.ProjectPath}}/internal/api_error"
+	{{.ManagerUtilPath}}
+)
+
+type (
+	Data{{.Camel}}Adapter interface {
+		Get(*{{.Camel}}) error
+		List(*[]{{.Camel}}) error
+		Post(*{{.Camel}}) error
+		Put(*{{.Camel}}) error
+		Delete(*{{.Camel}}) error
+	}
+
+	Manager{{.Camel}} struct {
+		data{{.Camel}} Data{{.Camel}}Adapter
+	}
+)
+
+func NewManager{{.Camel}}(c{{.Abbr}} Data{{.Camel}}Adapter) *Manager{{.Camel}} {
+	return &Manager{{.Camel}}{data{{.Camel}}: c{{.Abbr}}}
+}
+
+func (m *Manager{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
+{{.ManagerGetRow}}
+	return m.data{{.Camel}}.Get({{.Abbr}})
+}
+
+func (m *Manager{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
+	return m.data{{.Camel}}.List({{.Abbr}})
+}
+
+func (m *Manager{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
+{{.ManagerPostRows}}
+	return m.data{{.Camel}}.Post({{.Abbr}})
+}
+
+func (m *Manager{{.Camel}}) Put(body []byte) error {
+	jParsed, errP := g.ParseJSON(body)
+	if errP != nil {
+		return ae.BindError(errP)
+	}
+{{.ManagerPutRows}}
+	return m.data{{.Camel}}.Put({{.Abbr}})
+}
+
+func (m *Manager{{.Camel}}) Delete({{.Abbr}} *{{.Camel}}) error {
+{{.ManagerGetRow}}
+	return m.data{{.Camel}}.Delete({{.Abbr}})
+}
+
+func ValidJson(jsonValue json.RawMessage) bool {
+    bValue, err := jsonValue.MarshalJSON()
+    if err != nil {
+        return false
+    }
+    check := make(map[string]interface{}, 0)
+    if errCheck := json.Unmarshal(bValue, &check); errCheck != nil {
+        return false
+    }
+    return true
+}

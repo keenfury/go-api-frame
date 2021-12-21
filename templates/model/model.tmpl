@@ -1,0 +1,25 @@
+package {{.Lower}}
+
+import (
+    "{{.ProjectPath}}/config"{{.ModelIncludeNull}}
+)
+
+type (
+    Storage{{.Camel}}Adapter interface {
+        Get(*{{.Camel}}) error
+        List(*[]{{.Camel}}) error
+        Post(*{{.Camel}}) error
+        Put(*{{.Camel}}) error
+        Delete(*{{.Camel}}) error
+    }
+
+    {{.Camel}} struct {
+{{.ModelRows}}
+    }
+)
+
+func InitStorage() Storage{{.Camel}}Adapter {
+    // TODO: decide which storage to use
+{{.InitStorage}}
+    return nil
+}

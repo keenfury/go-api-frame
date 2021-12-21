@@ -1,0 +1,9 @@
+{
+    "message": "This is used for the scaffolding program for convenience",
+    "full_path": "/Users/ericsmith/Programming/go/src/bitbucket.org/keenfury/scaffolding",
+    "sub_dir": "v1",
+    "project_path": "bitbucket.org/keenfury/scaffolding",
+    "dynamic_schema": true,
+    "schema": "%s_eric",
+    "dynamic_schema_postfix": "config.Env"
+}

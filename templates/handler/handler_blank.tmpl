@@ -1,0 +1,21 @@
+package {{.Lower}}
+
+import (
+	"github.com/labstack/echo"
+)
+
+type (
+	Manager{{.Camel}}Adapter interface {
+	}
+
+	Handler{{.Camel}} struct {
+		manager{{.Camel}} Manager{{.Camel}}Adapter
+	}
+)
+
+func NewHandler{{.Camel}}(m{{.Abbr}} Manager{{.Camel}}Adapter) *Handler{{.Camel}} {
+	return &Handler{{.Camel}}{manager{{.Camel}}: m{{.Abbr}}}
+}
+
+func (h *Handler{{.Camel}}) Load{{.Camel}}Routes(eg *echo.Group) {
+}

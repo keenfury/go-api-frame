@@ -1,0 +1,37 @@
+package {{.Lower}}
+
+import (
+	"github.com/jmoiron/sqlx"
+
+	stor "{{.ProjectPath}}/internal/storage"
+)
+
+type (
+	SQL{{.Camel}} struct {
+		DB *sqlx.DB
+	}
+)
+
+func InitSQL() *SQL{{.Camel}} {
+	return &SQL{{.Camel}}{DB: stor.{{.SQLProvider}}DB}
+}
+
+func (d *SQL{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
+	return nil
+}
+
+func (d *SQL{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
+	return nil
+}
+
+func (d *SQL{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
+	return nil
+}
+
+func (d *SQL{{.Camel}}) Put({{.Abbr}} *{{.Camel}}) error {
+	return nil
+}
+
+func (d *SQL{{.Camel}}) Delete({{.Abbr}} *{{.Camel}}) error {
+	return nil
+}
