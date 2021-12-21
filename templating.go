@@ -272,7 +272,9 @@ func (ep *EndPoint) BuildDataTemplate() {
 	ep.SqlPutColumns = strings.TrimRight(putColumn, "\n")
 	ep.SqlPutWhere = putKeys
 	if foundSerial != "" {
-		ep.SqlPostReturning = fmt.Sprintf(" returning %s", foundSerialDB)
+		if ep.SQLProvider == POSTGRESQL {
+			ep.SqlPostReturning = fmt.Sprintf(" returning %s", foundSerialDB)
+		}
 		ep.SqlPostLastId = fmt.Sprintf(DATA_LAST_ID, ep.Abbr, foundSerial)
 	}
 	ep.FileKeys = strings.Join(fileKey, " && ")

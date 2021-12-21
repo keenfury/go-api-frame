@@ -175,7 +175,6 @@ const (
 import (
 	"github.com\/labstack\/echo"
 	
-	stor "{{.ProjectFile.ProjectPathEncoded}}\/internal\/storage"
 	\/\/ --- replace header text - do not remove ---
 )`
 	COMMON_HEADER = `{{.Name.Abbr}} "{{.ProjectFile.ProjectPathEncoded}}\/{{.ProjectFile.SubDirEncoded}}\/{{.Name.Lower}}"
