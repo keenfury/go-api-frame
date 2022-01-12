@@ -97,8 +97,8 @@ func (ep *EndPoint) BuildHandlerTemplate() {
 func (ep *EndPoint) BuildManagerTemplate() {
 	getDeleteRow := ""
 	postRow := "\t"
-	putRow := ""
-	putSearch := ""
+	patchRow := ""
+	patchSearch := ""
 	setArgs := ""
 	foundOneKey := false
 	for _, c := range ep.Columns {
@@ -106,26 +106,26 @@ func (ep *EndPoint) BuildManagerTemplate() {
 			if c.GoType == "string" {
 				if foundOneKey {
 					setArgs += ", "
-					putSearch += "\n"
+					patchSearch += "\n"
 					getDeleteRow += "\n"
 				}
 				getDeleteRow += fmt.Sprintf(MANAGER_GET_STRING, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-				putSearch += fmt.Sprintf(MANAGER_PUT_SEARCH_STRING, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel)
+				patchSearch += fmt.Sprintf(MANAGER_PATCH_SEARCH_STRING, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel)
 				foundOneKey = true
 			}
 			if c.GoType == "int" {
 				if foundOneKey {
 					setArgs += ", "
-					putSearch += "\n"
+					patchSearch += "\n"
 				}
 				getDeleteRow += fmt.Sprintf(MANAGER_GET_INT, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-				putSearch += fmt.Sprintf(MANAGER_PUT_SEARCH_INT, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Lower)
+				patchSearch += fmt.Sprintf(MANAGER_PATCH_SEARCH_INT, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Lower)
 				foundOneKey = true
 			}
 			setArgs += fmt.Sprintf("%s: %s", c.ColumnName.Camel, c.ColumnName.Lower)
 		}
 	}
-	putRow = putSearch + fmt.Sprintf(MANAGER_PUT_STRUCT_STMT, ep.Abbr, ep.Camel, setArgs) + fmt.Sprintf(MANAGER_PUT_GET_STMT, ep.Abbr)
+	patchRow = patchSearch + fmt.Sprintf(MANAGER_PATCH_STRUCT_STMT, ep.Abbr, ep.Camel, setArgs) + fmt.Sprintf(MANAGER_PATCH_GET_STMT, ep.Abbr)
 	for _, c := range ep.Columns {
 		// post rows
 		// if c.DBType == "autoincrement" || c.DBType == "serial" {
@@ -143,28 +143,28 @@ func (ep *EndPoint) BuildManagerTemplate() {
 			}
 		}
 		// }
-		// put rows
+		// patch rows
 		if c.GoType == "null.String" {
 			if !c.PrimaryKey {
-				putRow += fmt.Sprintf(MANAGER_PUT_STRING_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+				patchRow += fmt.Sprintf(MANAGER_PATCH_STRING_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			}
 		}
 		if c.GoType == "int" || c.GoType == "null.Int" {
 			if !c.PrimaryKey {
-				putRow += fmt.Sprintf(MANAGER_PUT_INT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+				patchRow += fmt.Sprintf(MANAGER_PATCH_INT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			}
 		}
 		if c.GoType == "null.Float" {
-			putRow += fmt.Sprintf(MANAGER_PUT_FLOAT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_FLOAT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "null.Bool" {
-			putRow += fmt.Sprintf(MANAGER_PUT_BOOL_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_BOOL_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "*json.RawMessage" {
-			putRow += fmt.Sprintf(MANAGER_PUT_JSON_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.LowerCamel, c.ColumnName.Lower, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_JSON_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.LowerCamel, c.ColumnName.Lower, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "null.Time" {
-			putRow += fmt.Sprintf(MANAGER_PUT_TIME_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_TIME_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			ep.ManagerTime = "\n\t\"time\""
 		}
 	}
@@ -180,7 +180,7 @@ func (ep *EndPoint) BuildManagerTemplate() {
 	}
 	ep.ManagerGetRow = strings.TrimRight(getDeleteRow, "\n")
 	ep.ManagerPostRows = strings.TrimRight(postRow, "\n")
-	ep.ManagerPutRows = strings.TrimRight(putRow, "\n")
+	ep.ManagerPatchRows = strings.TrimRight(patchRow, "\n")
 }
 
 func (ep *EndPoint) BuildDataTemplate() {
@@ -193,16 +193,16 @@ func (ep *EndPoint) BuildDataTemplate() {
 	}
 	SqlGetColumns := ""
 	foundOneKey := false
-	foundOnePut := false
+	foundOnePatch := false
 	foundOnePost := false
 	keys := ""
-	putKeys := ""
+	patchKeys := ""
 	keyCount := 1
 	values := ""
 	listOrder := ""
 	postColumn := ""
 	postColumnNames := ""
-	putColumn := ""
+	patchColumn := ""
 	keysCount := 1
 	foundSerial := ""
 	foundSerialDB := ""
@@ -244,7 +244,7 @@ func (ep *EndPoint) BuildDataTemplate() {
 			} else {
 				keys += fmt.Sprintf("%s = $%d", c.ColumnName.Lower, keyCount)
 			}
-			putKeys += fmt.Sprintf("%s = :%s", c.ColumnName.Lower, c.ColumnName.Lower)
+			patchKeys += fmt.Sprintf("%s = :%s", c.ColumnName.Lower, c.ColumnName.Lower)
 			keyCount++
 			values += fmt.Sprintf("%s.%s", ep.Name.Abbr, c.ColumnName.Camel)
 			listOrder += fmt.Sprintf("%s", c.ColumnName.Lower)
@@ -256,11 +256,11 @@ func (ep *EndPoint) BuildDataTemplate() {
 				filePostIncr = append(filePostIncr, fmt.Sprintf("\t%s.%s = max%s + 1", ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel))
 			}
 		} else {
-			if foundOnePut {
-				putColumn += ",\n\t\t\t"
+			if foundOnePatch {
+				patchColumn += ",\n\t\t\t"
 			}
-			putColumn += fmt.Sprintf("%s = :%s", c.ColumnName.Lower, c.ColumnName.Lower)
-			foundOnePut = true
+			patchColumn += fmt.Sprintf("%s = :%s", c.ColumnName.Lower, c.ColumnName.Lower)
+			foundOnePatch = true
 		}
 	}
 	ep.SqlGetColumns = strings.TrimRight(SqlGetColumns, "\n")
@@ -269,8 +269,8 @@ func (ep *EndPoint) BuildDataTemplate() {
 	ep.SqlTableKeyListOrder = listOrder
 	ep.SqlPostColumns = strings.TrimRight(postColumn, "\n")
 	ep.SqlPostColumnsNamed = strings.TrimRight(postColumnNames, "\n")
-	ep.SqlPutColumns = strings.TrimRight(putColumn, "\n")
-	ep.SqlPutWhere = putKeys
+	ep.SqlPatchColumns = strings.TrimRight(patchColumn, "\n")
+	ep.SqlPatchWhere = patchKeys
 	if foundSerial != "" {
 		if ep.SQLProvider == POSTGRESQL {
 			ep.SqlPostReturning = fmt.Sprintf(" returning %s", foundSerialDB)

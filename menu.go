@@ -7,7 +7,9 @@ import (
 	"strings"
 )
 
-func storageMenu(reader *bufio.Reader) (bool, string) {
+func storageMenu(reader *bufio.Reader) (bool, bool, string) {
+	msg := "Would you like to use an ORM? "
+	useORM := AskYesOrNo(reader, msg)
 	storage := []string{}
 	messages := []string{"SQL Options", "Choice which SQL implementation"}
 	prompts := []string{"(p)ostgres", "(m)ysql", "(s)qlite3"}
@@ -18,10 +20,10 @@ StorageLoop:
 		fmt.Println("Storage Types")
 		fmt.Println("Enter choices on one line with spaces between choices")
 		fmt.Println("")
-		fmt.Println("(1) SQL")
-		fmt.Println("(2) File")
-		fmt.Println("(3) MongoDB")
-		fmt.Println("(e) Exit")
+		fmt.Println("(S)QL")
+		fmt.Println("(F)ile")
+		fmt.Println("(M)ongoDB")
+		fmt.Println("(E)xit")
 		fmt.Println("")
 		fmt.Println("")
 		fmt.Printf("Select choices: ")
@@ -69,13 +71,13 @@ StorageLoop:
 	}
 
 	if exitEarly {
-		return false, ""
+		return false, false, ""
 	}
 
 	fmt.Println("")
-	msg := "Would you like to save these options for the project? "
+	msg = "Would you like to save these SQL options for the project? "
 	save := AskYesOrNo(reader, msg)
-	return save, strings.Join(storage, " ")
+	return useORM, save, strings.Join(storage, " ")
 }
 
 func SqlMenu(project *Project, sqlType string) {

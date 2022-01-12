@@ -13,7 +13,7 @@ type (
 		Get(*{{.Camel}}) error
 		List(*[]{{.Camel}}) error
 		Post(*{{.Camel}}) error
-		Put(*{{.Camel}}) error
+		Patch(*{{.Camel}}) error
 		Delete(*{{.Camel}}) error
 	}
 
@@ -40,13 +40,13 @@ func (m *Manager{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
 	return m.data{{.Camel}}.Post({{.Abbr}})
 }
 
-func (m *Manager{{.Camel}}) Put(body []byte) error {
+func (m *Manager{{.Camel}}) Patch(body []byte) error {
 	jParsed, errP := g.ParseJSON(body)
 	if errP != nil {
 		return ae.BindError(errP)
 	}
-{{.ManagerPutRows}}
-	return m.data{{.Camel}}.Put({{.Abbr}})
+{{.ManagerPatchRows}}
+	return m.data{{.Camel}}.Patch({{.Abbr}})
 }
 
 func (m *Manager{{.Camel}}) Delete({{.Abbr}} *{{.Camel}}) error {

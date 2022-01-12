@@ -55,13 +55,13 @@ func (d *SQL{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) Put({{.Abbr}} *{{.Camel}}) error {
-	sqlPut := {{.DataTablePrefix}}`
+func (d *SQL{{.Camel}}) Patch({{.Abbr}} *{{.Camel}}) error {
+	sqlPatch := {{.DataTablePrefix}}`
 		update {{.DataTable}} set
-			{{.SqlPutColumns}}
-		where {{.SqlPutWhere}}`{{.DataTablePostfix}}
-	if _, errDB := d.DB.NamedExec(sqlPut, {{.Abbr}}); errDB != nil {
-		return ae.DBError("{{.Camel}} Put: unable to update record.", errDB)
+			{{.SqlPatchColumns}}
+		where {{.SqlPatchWhere}}`{{.DataTablePostfix}}
+	if _, errDB := d.DB.NamedExec(sqlPatch, {{.Abbr}}); errDB != nil {
+		return ae.DBError("{{.Camel}} Patch: unable to update record.", errDB)
 	}
 	return nil
 }

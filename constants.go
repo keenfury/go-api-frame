@@ -1,9 +1,12 @@
 package main
 
 const (
-	POSTGRESQL = "Psql"
-	MYSQL      = "MySql"
-	SQLITE3    = "Sqlite"
+	POSTGRESQL      = "Postgres"
+	MYSQL           = "MySql"
+	SQLITE3         = "Sqlite"
+	POSTGRESQLLOWER = "postgres"
+	MYSQLLOWER      = "mysql"
+	SQLITE3LOWER    = "sqlite"
 
 	MODEL_INCLUDE_NULL = "\n\t\"gopkg.in/guregu/null.v3\""
 	MODEL_COLUMN       = "\t\t%s\t%s\t`db:\"%s\" json:\"%s\"`"
@@ -48,55 +51,55 @@ const (
 		return ae.ParseError("%s is invalid JSON")
 	}
 	`  // Abbr, Lower, Camel
-	MANAGER_PUT_SEARCH_STRING = `	%s, ok%s := jParsed.Search("%s").Data().(string)
+	MANAGER_PATCH_SEARCH_STRING = `	%s, ok%s := jParsed.Search("%s").Data().(string)
 	if !ok%s {
 		return ae.MissingParamError("%s")
 	}
 	`  // Lower, Camel, Lower, Camel, Camel
-	MANAGER_PUT_SEARCH_INT = `	%sFlt, ok%sFlt := jParsed.Search("%s").Data().(float64)
+	MANAGER_PATCH_SEARCH_INT = `	%sFlt, ok%sFlt := jParsed.Search("%s").Data().(float64)
 	if !ok%sFlt {
 		return ae.MissingParamError("%s")
 	}
 	%s := int(%sFlt)
 	`  // Lower, Camel, Lower, Camel, Camel, Lower, Lower
-	MANAGER_PUT_STRUCT_STMT = `	%s := &%s{%s}
+	MANAGER_PATCH_STRUCT_STMT = `	%s := &%s{%s}
 	`  // Abbr, Camel, KeySearchList
-	MANAGER_PUT_GET_STMT = `	errGet := m.Get(%s)
+	MANAGER_PATCH_GET_STMT = `	errGet := m.Get(%s)
 	if errGet != nil {
 		return errGet
 	}
 	`  // Abbr
-	MANAGER_PUT_INT_ASSIGN = `// %s
+	MANAGER_PATCH_INT_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(float64)
 	if ok%s {
 		%s.%s = int64(%s)
 	}
 	`  // ColCamel, ColLower, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLower
-	MANAGER_PUT_INT_NULL_ASSIGN = `// %s
+	MANAGER_PATCH_INT_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(float64)
 	if ok%s {
 		%s.%s.Scan(int64(%s))
 	}
 	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLowerCamel
-	MANAGER_PUT_FLOAT_NULL_ASSIGN = `// %s
+	MANAGER_PATCH_FLOAT_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(float64)
 	if ok%s {
 		%s.%s.Scan(%s)
 	}
 	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLowerCamel
-	MANAGER_PUT_STRING_NULL_ASSIGN = `// %s
+	MANAGER_PATCH_STRING_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(string)
 	if ok%s {
 		%s.%s.Scan(%s)
 	}
 	`  // ColCamel, ColCamelLower, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColCamelLower
-	MANAGER_PUT_BOOL_NULL_ASSIGN = `// %s
+	MANAGER_PATCH_BOOL_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(bool)
 	if ok%s {
 		%s.%s.Scan(%s)
 	}
 	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLowerCamel
-	MANAGER_PUT_JSON_NULL_ASSIGN = `// %s
+	MANAGER_PATCH_JSON_NULL_ASSIGN = `// %s
 	if jParsed.Exists("%s") {
 		%s := json.RawMessage(jParsed.Search("%s").Bytes())
 		if !ValidJson(*%s) {
@@ -105,7 +108,7 @@ const (
 		%s.%s = &%s
 	}
 	`  // ColCamel, ColLower, ColLowerCamel, ColLower, ColLowerCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
-	MANAGER_PUT_TIME_NULL_ASSIGN = `// %s
+	MANAGER_PATCH_TIME_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(string)
 	if ok%s {
 		%sTime, errParse := time.Parse(time.RFC3339, %s)

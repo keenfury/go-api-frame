@@ -1,0 +1,33 @@
+package storage
+
+import (
+	//"database/sql"
+	"fmt"
+	"log"
+
+	_ "github.com/lib/pq"
+	"github.com/jmoiron/sqlx"
+	"{{.ProjectPath}}/config"
+)
+
+var PsqlDB *sqlx.DB
+var postgresConnection string
+
+func init() {
+	if config.StorageSQL && config.StoragePsql {
+		postgresConnection = GetPostgresConnection()
+		var err error
+		PsqlDB, err = sqlx.Connect("postgres", postgresConnection)
+		if err != nil {
+			log.Panicln("Could not connect with connection string:", postgresConnection)
+		}
+	}
+}
+
+func GetPostgresConnection() string {
+	postgresConnection = fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", config.DBUser, config.DBPass, config.DBDB, config.DBHost)
+	if config.DBPass == "" {
+		postgresConnection = fmt.Sprintf("user=%s dbname=%s host=%s sslmode=disable", config.DBUser, config.DBDB, config.DBHost)
+	}
+	return postgresConnection
+}

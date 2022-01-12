@@ -15,7 +15,7 @@ type (
 		Get(*{{.Camel}}) error
 		List(*[]{{.Camel}}) error
 		Post(*{{.Camel}}) error
-		Put([]byte) error
+		Patch([]byte) error
 		Delete(*{{.Camel}}) error
 	}
 
@@ -32,7 +32,7 @@ func (h *Handler{{.Camel}}) Load{{.Camel}}Routes(eg *echo.Group) {
 	eg.GET("/{{.Lower}}/{{.HandlerGetDeleteUrl}}", h.Get)
 	eg.GET("/{{.Lower}}/list", h.List)
 	eg.POST("/{{.Lower}}", h.Post)
-	eg.PUT("/{{.Lower}}", h.Put)
+	eg.PATCH("/{{.Lower}}", h.Patch)
 	eg.DELETE("/{{.Lower}}/{{.HandlerGetDeleteUrl}}", h.Delete)
 }
 
@@ -68,9 +68,9 @@ func (h *Handler{{.Camel}}) Post(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.NewOutput(*{{.Abbr}}, true, 0 ,0, 0))
 }
 
-func (h *Handler{{.Camel}}) Put(c echo.Context) error {
+func (h *Handler{{.Camel}}) Patch(c echo.Context) error {
 	body, _ := ioutil.ReadAll(c.Request().Body)
-	if err := h.manager{{.Camel}}.Put(body); err != nil {
+	if err := h.manager{{.Camel}}.Patch(body); err != nil {
 		be := err.(ae.ApiError).BodyError()
 		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
 	}

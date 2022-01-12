@@ -56,7 +56,7 @@ func main() {
 	}
 
 	if project.ProjectFile.SaveStorage == false {
-		project.ProjectFile.SaveStorage, project.ProjectFile.Storages = storageMenu(reader)
+		project.ProjectFile.UseORM, project.ProjectFile.SaveStorage, project.ProjectFile.Storages = storageMenu(reader)
 	}
 	project.DetermineMenu()
 	fmt.Printf("\n*** Remember to 'go mod tidy' ***\n\n")

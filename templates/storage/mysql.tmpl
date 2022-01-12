@@ -1,0 +1,33 @@
+package storage
+
+import (
+	//"database/sql"
+	"fmt"
+	"log"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	"{{.ProjectPath}}/config"
+)
+
+var MySqlDB *sqlx.DB
+var mySqlConnection string
+
+func init() {
+	if config.StorageSQL && config.StorageMysql {
+		mySqlConnection = GetMySqlConnection()
+		var err error
+		MySqlDB, err = sqlx.Connect("mysql", mySqlConnection)
+		if err != nil {
+			log.Panicln("Could not connect with connection string:", mySqlConnection)
+		}
+	}
+}
+
+func GetMySqlConnection() string {
+	mySqlConnection = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.DBUser, config.DBPass, config.DBHost, config.DBDB)
+	if config.DBPass == "" {
+		mySqlConnection = fmt.Sprintf("%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.DBUser, config.DBHost, config.DBDB)
+	}
+	return mySqlConnection
+}

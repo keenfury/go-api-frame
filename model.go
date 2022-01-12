@@ -17,6 +17,7 @@ type (
 		DynamicSchema        bool   `json:"dynamic_schema"`
 		Schema               string `json:"schema"`
 		DynamicSchemaPostfix string `json:"dynamic_schema_postfix"`
+		UseORM               bool   `json:"use_orm"`
 	}
 
 	Project struct {
@@ -38,7 +39,7 @@ type (
 		ManagerTime            string
 		ManagerGetRow          string
 		ManagerPostRows        string
-		ManagerPutRows         string
+		ManagerPatchRows       string
 		ManagerUtilPath        string
 		DataTable              string
 		DataTablePrefix        string
@@ -51,9 +52,9 @@ type (
 		SqlPostColumnsNamed    string
 		SqlPostReturning       string
 		SqlPostLastId          string
-		SqlPutColumns          string
-		SqlPutWhere            string
-		SqlPutWhereValues      string
+		SqlPatchColumns        string
+		SqlPatchWhere          string
+		SqlPatchWhereValues    string
 		FileKeys               string
 		FileGetColumns         string
 		FilePostIncr           string
@@ -61,6 +62,8 @@ type (
 		SqlLines               Sql
 		InitStorage            string // holds the formatted lines for InitStorage for model
 		SQLProvider            string // optional if using SQL as a storage, either Psql, MySql or Sqlite; this interfaces with sqlx
+		SQLProviderLower       string // optional if using SQL as a storage, either psql, mysql or sqlite; this interfaces with gorm
+		SQLProviderConnection  string // holds the connection string for gorm of the other sql types
 		Name
 		ProjectFile
 	}
