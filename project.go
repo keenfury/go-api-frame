@@ -122,7 +122,7 @@ func (p *Project) ProcessTemplates() {
 	for _, ep := range p.EndPoints {
 		storageFiles := []string{}
 		savePath := fmt.Sprintf("%s/%s/%s", p.ProjectFile.FullPath, p.ProjectFile.SubDir, ep.AllLower)
-		storageSavePath := fmt.Sprintf("%s/%s/../storage", p.ProjectFile.FullPath, p.ProjectFile.SubDir)
+		storageSavePath := fmt.Sprintf("%s/internal/storage", p.ProjectFile.FullPath)
 		if _, err := os.Stat(storageSavePath); !os.IsNotExist(err) {
 			fmt.Println("Endpoint name already exists, skipping!")
 			continue
