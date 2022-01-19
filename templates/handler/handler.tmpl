@@ -1,4 +1,4 @@
-package {{.Lower}}
+package {{.AllLower}}
 
 import (
 	"io/ioutil"
@@ -29,11 +29,11 @@ func NewHandler{{.Camel}}(m{{.Abbr}} Manager{{.Camel}}Adapter) *Handler{{.Camel}
 }
 
 func (h *Handler{{.Camel}}) Load{{.Camel}}Routes(eg *echo.Group) {
-	eg.GET("/{{.Lower}}/{{.HandlerGetDeleteUrl}}", h.Get)
-	eg.GET("/{{.Lower}}/list", h.List)
-	eg.POST("/{{.Lower}}", h.Post)
-	eg.PATCH("/{{.Lower}}", h.Patch)
-	eg.DELETE("/{{.Lower}}/{{.HandlerGetDeleteUrl}}", h.Delete)
+	eg.GET("/{{.AllLower}}/{{.HandlerGetDeleteUrl}}", h.Get)
+	eg.GET("/{{.AllLower}}/list", h.List)
+	eg.POST("/{{.AllLower}}", h.Post)
+	eg.PATCH("/{{.AllLower}}", h.Patch)
+	eg.DELETE("/{{.AllLower}}/{{.HandlerGetDeleteUrl}}", h.Delete)
 }
 
 func (h *Handler{{.Camel}}) Get(c echo.Context) error {

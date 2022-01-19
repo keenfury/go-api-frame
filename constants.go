@@ -9,7 +9,7 @@ const (
 	SQLITE3LOWER    = "sqlite"
 
 	MODEL_INCLUDE_NULL = "\n\t\"gopkg.in/guregu/null.v3\""
-	MODEL_COLUMN       = "\t\t%s\t%s\t`db:\"%s\" json:\"%s\"`"
+	MODEL_COLUMN       = "\t\t%s\t%s\t`db:\"%s\" json:\"%s\" gorm:\"column:%s\"`"
 
 	HANDLER_PRIMARY_INT = `	%sStr := c.Param("%s")
 	%s, err := strconv.ParseInt(%sStr, 10, 64)
@@ -55,13 +55,13 @@ const (
 	if !ok%s {
 		return ae.MissingParamError("%s")
 	}
-	`  // Lower, Camel, Lower, Camel, Camel
+	`  // Lower, Camel, Camel, Camel, Camel
 	MANAGER_PATCH_SEARCH_INT = `	%sFlt, ok%sFlt := jParsed.Search("%s").Data().(float64)
 	if !ok%sFlt {
 		return ae.MissingParamError("%s")
 	}
 	%s := int(%sFlt)
-	`  // Lower, Camel, Lower, Camel, Camel, Lower, Lower
+	`  // Lower, Camel, Camel, Camel, Camel, Lower, Lower
 	MANAGER_PATCH_STRUCT_STMT = `	%s := &%s{%s}
 	`  // Abbr, Camel, KeySearchList
 	MANAGER_PATCH_GET_STMT = `	errGet := m.Get(%s)
@@ -74,31 +74,31 @@ const (
 	if ok%s {
 		%s.%s = int64(%s)
 	}
-	`  // ColCamel, ColLower, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLower
+	`  // ColCamel, ColLower, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColLower
 	MANAGER_PATCH_INT_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(float64)
 	if ok%s {
 		%s.%s.Scan(int64(%s))
 	}
-	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLowerCamel
+	`  // ColCamel, ColLowerCamel, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
 	MANAGER_PATCH_FLOAT_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(float64)
 	if ok%s {
 		%s.%s.Scan(%s)
 	}
-	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLowerCamel
+	`  // ColCamel, ColLowerCamel, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
 	MANAGER_PATCH_STRING_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(string)
 	if ok%s {
 		%s.%s.Scan(%s)
 	}
-	`  // ColCamel, ColCamelLower, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColCamelLower
+	`  // ColCamel, ColCamelLower, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColCamelLower
 	MANAGER_PATCH_BOOL_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(bool)
 	if ok%s {
 		%s.%s.Scan(%s)
 	}
-	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, Abbr, ColCamel, ColLowerCamel
+	`  // ColCamel, ColLowerCamel, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
 	MANAGER_PATCH_JSON_NULL_ASSIGN = `// %s
 	if jParsed.Exists("%s") {
 		%s := json.RawMessage(jParsed.Search("%s").Bytes())
@@ -107,7 +107,7 @@ const (
 		}
 		%s.%s = &%s
 	}
-	`  // ColCamel, ColLower, ColLowerCamel, ColLower, ColLowerCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
+	`  // ColCamel, ColCamel, ColLowerCamel, ColCamel, ColLowerCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
 	MANAGER_PATCH_TIME_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(string)
 	if ok%s {
@@ -117,7 +117,7 @@ const (
 		}
 		%s.%s.Scan(%sTime)
 	}
-	`  // ColCamel, ColLowerCamel, ColCamel, ColLower, ColCamel, ColLowerCamel, ColLowerCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
+	`  // ColCamel, ColLowerCamel, ColCamel, ColCamel, ColCamel, ColLowerCamel, ColLowerCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
 	DATA_LAST_ID = `var lastId int64
 	if rows.Next() {
 		rows.Scan(&lastId)
@@ -180,7 +180,7 @@ import (
 	
 	\/\/ --- replace header text - do not remove ---
 )`
-	COMMON_HEADER = `{{.Name.Abbr}} "{{.ProjectFile.ProjectPathEncoded}}\/{{.ProjectFile.SubDirEncoded}}\/{{.Name.Lower}}"
+	COMMON_HEADER = `{{.Name.Abbr}} "{{.ProjectFile.ProjectPathEncoded}}\/{{.ProjectFile.SubDirEncoded}}\/{{.Name.AllLower}}"
 	\/\/ --- replace header text - do not remove ---`
 
 	COMMON_SECTION = `\/\/ {{.Camel}}
@@ -192,4 +192,15 @@ func Setup{{.Camel}}(eg *echo.Group) {
 }
 	
 \/\/ --- replace section text - do not remove ---`
+
+	GRPC_IMPORT_ONCE = `pb "{{.ProjectFile.ProjectPathEncoded}}\/pkg\/proto"`
+
+	GRPC_IMPORT = `{{.Name.Abbr}} "{{.ProjectFile.ProjectPathEncoded}}\/{{.ProjectFile.SubDirEncoded}}\/{{.Name.AllLower}}"
+	\/\/ --- replace grpc import - do not remove ---`
+
+	GRPC_TEXT = `s{{.Name.Abbr}} := {{.Name.Abbr}}.InitStorage()
+	m{{.Name.Abbr}} := {{.Name.Abbr}}.NewManager{{.Name.Camel}}(s{{.Name.Abbr}})
+	h{{.Name.Abbr}} := {{.Name.Abbr}}.New{{.Name.Camel}}Grpc(m{{.Name.Abbr}})
+	pb.Register{{.Name.Camel}}ServiceServer(s, h{{.Name.Abbr}})
+	\/\/ --- replace grpc text - do not remove ---`
 )

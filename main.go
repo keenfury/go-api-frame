@@ -59,6 +59,7 @@ func main() {
 		project.ProjectFile.UseORM, project.ProjectFile.SaveStorage, project.ProjectFile.Storages = storageMenu(reader)
 	}
 	project.DetermineMenu()
+	project.Protoc()
 	fmt.Printf("\n*** Remember to 'go mod tidy' ***\n\n")
 	fmt.Println("Bye!")
 }
@@ -113,4 +114,5 @@ func (n *Name) NameConverter() {
 	n.Camel = camel
 	n.LowerCamel = camelLower
 	n.Lower = lower
+	n.AllLower = strings.ToLower(camel)
 }

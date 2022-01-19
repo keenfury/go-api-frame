@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"text/tabwriter"
 	"text/template"
 )
 
-var tmplFiles = []string{"model", "handler", "manager"} // TODO: sql is optional depending on which data storages they want to template, dynamically build this
+var tmplFiles = []string{"model", "handler", "manager", "grpc"} // TODO: sql is optional depending on which data storages they want to template, dynamically build this
 
 func (p *Project) LoadProjectFile() bool {
 	if _, errStat := os.Stat("./.scaffold"); os.IsNotExist(errStat) {
@@ -120,7 +121,7 @@ func (p *Project) PrintBasicColumns(cols []Column) {
 func (p *Project) ProcessTemplates() {
 	for _, ep := range p.EndPoints {
 		storageFiles := []string{}
-		savePath := fmt.Sprintf("%s/%s/%s", p.ProjectFile.FullPath, p.ProjectFile.SubDir, ep.Lower)
+		savePath := fmt.Sprintf("%s/%s/%s", p.ProjectFile.FullPath, p.ProjectFile.SubDir, ep.AllLower)
 		storaeSavePath := fmt.Sprintf("%s/%s/../storage", p.ProjectFile.FullPath, p.ProjectFile.SubDir)
 		if _, err := os.Stat(savePath); !os.IsNotExist(err) {
 			fmt.Println("Endpoint name already exists, skipping!")
@@ -221,5 +222,14 @@ func (p *Project) ProcessTemplates() {
 				fmt.Println("Execution of template:", err)
 			}
 		}
+	}
+}
+
+func (p *Project) Protoc() {
+	cmd := fmt.Sprintf("cd pkg/proto && protoc --go_out=. --go_opt=paths=source_relative    --go-grpc_out=. --go-grpc_opt=paths=source_relative %s.proto", p.ProjectFile.AppName)
+	execProto := exec.Command("bash", "-c", cmd)
+	errProtoCmd := execProto.Run()
+	if errProtoCmd != nil {
+		fmt.Printf("Error executing protoc command: %s", errProtoCmd)
 	}
 }

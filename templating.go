@@ -19,6 +19,8 @@ func (ep *EndPoint) BuildTemplateParts() {
 	ep.BuildManagerTemplate()
 	// data
 	ep.BuildDataTemplate()
+	// grpc
+	ep.BuildGrpc()
 	// server & common hooks
 	ep.BuildAPIHooks()
 }
@@ -26,7 +28,7 @@ func (ep *EndPoint) BuildTemplateParts() {
 func (ep *EndPoint) BuildModelTemplate() {
 	cArray := []string{}
 	for _, c := range ep.Columns {
-		cArray = append(cArray, fmt.Sprintf(MODEL_COLUMN, c.ColumnName.Camel, c.GoType, c.ColumnName.Lower, c.ColumnName.Lower))
+		cArray = append(cArray, fmt.Sprintf(MODEL_COLUMN, c.ColumnName.Camel, c.GoType, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower))
 	}
 	ep.ModelRows = strings.Join(cArray, "\n")
 	if ep.HaveNullColumns {
@@ -110,7 +112,7 @@ func (ep *EndPoint) BuildManagerTemplate() {
 					getDeleteRow += "\n"
 				}
 				getDeleteRow += fmt.Sprintf(MANAGER_GET_STRING, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-				patchSearch += fmt.Sprintf(MANAGER_PATCH_SEARCH_STRING, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel)
+				patchSearch += fmt.Sprintf(MANAGER_PATCH_SEARCH_STRING, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel)
 				foundOneKey = true
 			}
 			if c.GoType == "int" {
@@ -119,7 +121,7 @@ func (ep *EndPoint) BuildManagerTemplate() {
 					patchSearch += "\n"
 				}
 				getDeleteRow += fmt.Sprintf(MANAGER_GET_INT, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-				patchSearch += fmt.Sprintf(MANAGER_PATCH_SEARCH_INT, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Lower)
+				patchSearch += fmt.Sprintf(MANAGER_PATCH_SEARCH_INT, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Lower)
 				foundOneKey = true
 			}
 			setArgs += fmt.Sprintf("%s: %s", c.ColumnName.Camel, c.ColumnName.Lower)
@@ -146,25 +148,25 @@ func (ep *EndPoint) BuildManagerTemplate() {
 		// patch rows
 		if c.GoType == "null.String" {
 			if !c.PrimaryKey {
-				patchRow += fmt.Sprintf(MANAGER_PATCH_STRING_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+				patchRow += fmt.Sprintf(MANAGER_PATCH_STRING_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			}
 		}
 		if c.GoType == "int" || c.GoType == "null.Int" {
 			if !c.PrimaryKey {
-				patchRow += fmt.Sprintf(MANAGER_PATCH_INT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+				patchRow += fmt.Sprintf(MANAGER_PATCH_INT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			}
 		}
 		if c.GoType == "null.Float" {
-			patchRow += fmt.Sprintf(MANAGER_PATCH_FLOAT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_FLOAT_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "null.Bool" {
-			patchRow += fmt.Sprintf(MANAGER_PATCH_BOOL_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_BOOL_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "*json.RawMessage" {
-			patchRow += fmt.Sprintf(MANAGER_PATCH_JSON_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.LowerCamel, c.ColumnName.Lower, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_JSON_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "null.Time" {
-			patchRow += fmt.Sprintf(MANAGER_PATCH_TIME_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+			patchRow += fmt.Sprintf(MANAGER_PATCH_TIME_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			ep.ManagerTime = "\n\t\"time\""
 		}
 	}
@@ -282,36 +284,101 @@ func (ep *EndPoint) BuildDataTemplate() {
 	ep.FilePostIncr = fmt.Sprintf("%s\n\tfor _, %sObj := range %ss {\n%s\n\t}\n%s", strings.Join(filePostIncrInit, "\n"), ep.Abbr, ep.Abbr, strings.Join(filePostIncrCheck, "\n"), strings.Join(filePostIncr, "\n"))
 }
 
+func (ep *EndPoint) BuildGrpc() {
+	protoFile := fmt.Sprintf("%s/pkg/proto/%s.proto", ep.ProjectFile.FullPath, ep.AppName)
+	if _, err := os.Stat(protoFile); os.IsNotExist(err) {
+		fmt.Printf("%s: file not found\n", protoFile)
+		return
+	}
+	lines := []string{}
+	lines = append(lines, fmt.Sprintf("message %s {", ep.Camel))
+	for i, column := range ep.Columns {
+		idx := i + 1 // start the count at 1
+		typeValue := "string"
+		switch column.GoType {
+		case "float64", "null.Float":
+			typeValue = "double"
+		case "float32":
+			typeValue = "float"
+		case "int32":
+			typeValue = "int32"
+		case "int64", "int", "null.Int":
+			typeValue = "int64"
+		case "uint32":
+			typeValue = "uint32"
+		case "uint64":
+			typeValue = "uint64"
+		case "bool", "null.Bool":
+			typeValue = "bool"
+		case "[]byte":
+			typeValue = "bytes"
+		default:
+			typeValue = "string"
+		}
+		lines = append(lines, fmt.Sprintf("\t%s %s = %d;", typeValue, column.ColumnName.Camel, idx))
+	}
+	lines = append(lines, "}")
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("message %sResponse {", ep.Camel))
+	lines = append(lines, fmt.Sprintf("\t%s %s = 1;", ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\tResult result = 2;"))
+	lines = append(lines, "}")
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("message %sRepeatResponse {", ep.Camel))
+	lines = append(lines, fmt.Sprintf("\trepeated %s %s = 1;", ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\tResult result = 2;"))
+	lines = append(lines, "}")
+	lines = append(lines, "")
+	lines = append(lines, fmt.Sprintf("service %sService {", ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\trpc Get%s(IDIn) returns (%sResponse);", ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\trpc List%s(%s) returns (%sRepeatResponse);", ep.Name.Camel, ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\trpc Post%s(%s) returns (%sResponse);", ep.Name.Camel, ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\trpc Patch%s(%s) returns (Result);", ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\trpc Delete%s(IDIn) returns (Result);", ep.Name.Camel))
+	lines = append(lines, "}")
+
+	file, err := os.OpenFile(protoFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("%s: unable to open file with error: %s\n", protoFile, err)
+		return
+	}
+	defer file.Close()
+	_, err = file.WriteString(strings.Join(lines, "\n"))
+	if err != nil {
+		fmt.Printf("%s: unable to write to file with error: %s\n", protoFile, err)
+	}
+}
+
 func (ep *EndPoint) BuildAPIHooks() {
 	// hook into server file
-	serverFile := fmt.Sprintf("%s/cmd/%s/main.go", ep.ProjectFile.FullPath, ep.ProjectFile.AppName)
-	if _, err := os.Stat(serverFile); os.IsNotExist(err) {
-		fmt.Printf("%s is missing unable to write in hooks\n", serverFile)
+	apiFile := fmt.Sprintf("%s/cmd/api/main.go", ep.ProjectFile.FullPath)
+	if _, err := os.Stat(apiFile); os.IsNotExist(err) {
+		fmt.Printf("%s is missing unable to write in hooks\n", apiFile)
 	} else {
 		var serverReplace bytes.Buffer
 		tServer := template.Must(template.New("server").Parse(SERVER_ROUTE))
 		errServer := tServer.Execute(&serverReplace, ep)
 		if errServer != nil {
-			fmt.Printf("%s: template error [%s]\n", serverFile, errServer)
+			fmt.Printf("%s: template error [%s]\n", apiFile, errServer)
 		} else {
-			cmdServer := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace server text - do not remove ---/%s/g' %s`, serverReplace.String(), serverFile)
+			cmdServer := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace server text - do not remove ---/%s/g' %s`, serverReplace.String(), apiFile)
 			execServer := exec.Command("bash", "-c", cmdServer)
 			errServerCmd := execServer.Run()
 			if errServerCmd != nil {
-				fmt.Printf("%s: error in replace for server [%s]\n", serverFile, errServerCmd)
+				fmt.Printf("%s: error in replace for server [%s]\n", apiFile, errServerCmd)
 			}
 		}
 		var mainReplace bytes.Buffer
 		tMain := template.Must(template.New("server").Parse(MAIN_COMMON_PATH))
 		errServer = tMain.Execute(&mainReplace, ep)
 		if errServer != nil {
-			fmt.Printf("%s: template error [%s]\n", serverFile, errServer)
+			fmt.Printf("%s: template error [%s]\n", apiFile, errServer)
 		} else {
-			cmdServer := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace server header text ---/%s/g' %s`, mainReplace.String(), serverFile)
+			cmdServer := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace server header text ---/%s/g' %s`, mainReplace.String(), apiFile)
 			execServer := exec.Command("bash", "-c", cmdServer)
 			errServerCmd := execServer.Run()
 			if errServerCmd != nil {
-				fmt.Printf("%s: error in replace for main [%s]\n", serverFile, errServerCmd)
+				fmt.Printf("%s: error in replace for main [%s]\n", apiFile, errServerCmd)
 			}
 		}
 	}
@@ -340,6 +407,51 @@ func (ep *EndPoint) BuildAPIHooks() {
 			errImportCmd := execImport.Run()
 			if errImportCmd != nil {
 				fmt.Println("Error in replace for import:", errImportCmd)
+			}
+		}
+	}
+	// hook into grpc file
+	grpcFile := fmt.Sprintf("%s/cmd/grpc/main.go", ep.ProjectFile.FullPath)
+	if _, err := os.Stat(grpcFile); os.IsNotExist(err) {
+		fmt.Printf("%s is missing unable to write in hooks\n", grpcFile)
+	} else {
+		var grpcReplace bytes.Buffer
+		tGrpc := template.Must(template.New("grpc").Parse(GRPC_TEXT))
+		errGrpc := tGrpc.Execute(&grpcReplace, ep)
+		if errGrpc != nil {
+			fmt.Printf("%s: template error [%s]\n", grpcFile, errGrpc)
+		} else {
+			cmdGrpc := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace grpc text - do not remove ---/%s/g' %s`, grpcReplace.String(), grpcFile)
+			execGrpc := exec.Command("bash", "-c", cmdGrpc)
+			errGrpcCmd := execGrpc.Run()
+			if errGrpcCmd != nil {
+				fmt.Printf("%s: error in replace for grpc text [%s]\n", grpcFile, errGrpcCmd)
+			}
+		}
+		var importReplace bytes.Buffer
+		tImport := template.Must(template.New("grpc").Parse(GRPC_IMPORT))
+		errGrpc = tImport.Execute(&importReplace, ep)
+		if errGrpc != nil {
+			fmt.Printf("%s: template error [%s]\n", grpcFile, errGrpc)
+		} else {
+			cmdGrpc := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace grpc import - do not remove ---/%s/g' %s`, importReplace.String(), grpcFile)
+			execGrpc := exec.Command("bash", "-c", cmdGrpc)
+			errGrpcCmd := execGrpc.Run()
+			if errGrpcCmd != nil {
+				fmt.Printf("%s: error in replace for grpc [%s]\n", grpcFile, errGrpcCmd)
+			}
+		}
+		var importOnceReplace bytes.Buffer
+		tOnce := template.Must(template.New("grpc").Parse(GRPC_IMPORT_ONCE))
+		errGrpc = tOnce.Execute(&importOnceReplace, ep)
+		if errGrpc != nil {
+			fmt.Printf("%s: template error [%s]\n", grpcFile, errGrpc)
+		} else {
+			cmdGrpc := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace grpc import once - do not remove ---/%s/g' %s`, importOnceReplace.String(), grpcFile)
+			execGrpc := exec.Command("bash", "-c", cmdGrpc)
+			errGrpcCmd := execGrpc.Run()
+			if errGrpcCmd != nil {
+				fmt.Printf("%s: error in replace for grpc [%s]\n", grpcFile, errGrpcCmd)
 			}
 		}
 	}
