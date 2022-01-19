@@ -336,6 +336,7 @@ func (ep *EndPoint) BuildGrpc() {
 	lines = append(lines, fmt.Sprintf("\trpc Patch%s(%s) returns (Result);", ep.Name.Camel, ep.Name.Camel))
 	lines = append(lines, fmt.Sprintf("\trpc Delete%s(IDIn) returns (Result);", ep.Name.Camel))
 	lines = append(lines, "}")
+	lines = append(lines, "")
 
 	file, err := os.OpenFile(protoFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {

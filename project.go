@@ -209,7 +209,7 @@ func (p *Project) ProcessTemplates() {
 				fmt.Println("Exiting...")
 				return
 			}
-			newFileName := fmt.Sprintf("%s/%s.go", storaeSavePath, tmpl)
+			newFileName := fmt.Sprintf("%s/%s.go", storageSavePath, tmpl)
 			// don't over-write if already there
 			if _, err := os.Stat(newFileName); !os.IsNotExist(err) {
 				fmt.Printf("already exists: %s, skipping\n", newFileName)
