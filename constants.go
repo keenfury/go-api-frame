@@ -198,7 +198,8 @@ func Setup{{.Camel}}(eg *echo.Group) {
 	GRPC_IMPORT = `{{.Name.Abbr}} "{{.ProjectFile.ProjectPathEncoded}}\/{{.ProjectFile.SubDirEncoded}}\/{{.Name.AllLower}}"
 	\/\/ --- replace grpc import - do not remove ---`
 
-	GRPC_TEXT = `s{{.Name.Abbr}} := {{.Name.Abbr}}.InitStorage()
+	GRPC_TEXT = `\/\/ {{.Name.Camel}}
+	s{{.Name.Abbr}} := {{.Name.Abbr}}.InitStorage()
 	m{{.Name.Abbr}} := {{.Name.Abbr}}.NewManager{{.Name.Camel}}(s{{.Name.Abbr}})
 	h{{.Name.Abbr}} := {{.Name.Abbr}}.New{{.Name.Camel}}Grpc(m{{.Name.Abbr}})
 	pb.Register{{.Name.Camel}}ServiceServer(s, h{{.Name.Abbr}})
