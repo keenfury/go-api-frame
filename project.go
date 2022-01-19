@@ -119,11 +119,15 @@ func (p *Project) PrintBasicColumns(cols []Column) {
 }
 
 func (p *Project) ProcessTemplates() {
+	storageSavePath := fmt.Sprintf("%s/internal/storage", p.ProjectFile.FullPath)
+	if errMakeAll := os.MkdirAll(storageSavePath, os.ModeDir|os.ModePerm); errMakeAll != nil {
+		fmt.Println("New storage folder was not able to be made", errMakeAll)
+		return
+	}
 	for _, ep := range p.EndPoints {
 		storageFiles := []string{}
 		savePath := fmt.Sprintf("%s/%s/%s", p.ProjectFile.FullPath, p.ProjectFile.SubDir, ep.AllLower)
-		storageSavePath := fmt.Sprintf("%s/internal/storage", p.ProjectFile.FullPath)
-		if _, err := os.Stat(storageSavePath); !os.IsNotExist(err) {
+		if _, err := os.Stat(savePath); !os.IsNotExist(err) {
 			fmt.Println("Endpoint name already exists, skipping!")
 			continue
 		}
