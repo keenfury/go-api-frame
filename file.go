@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (p *Project) LoadFile() {
+func (p *Project) File() {
 	clearScreen()
 	cont := AskYesOrNo(p.Reader, "This will create a file to read in the table schemas. Is this what you want (y/n)? ")
 	if !cont {

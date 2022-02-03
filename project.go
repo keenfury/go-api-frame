@@ -55,7 +55,7 @@ func (p *Project) CreateProjectFile() bool {
 		fmt.Println("You choose not to use the current diretory")
 		return false
 	}
-	p.ProjectFile.Message = "This is used for the scaffolding program for convenience"
+	p.ProjectFile.Message = "This is used for the api frame program for convenience"
 	p.ProjectFile.FullPath = pwd
 	p.ProjectFile.AppName = path.Base(pwd)
 	// ask for subdir
@@ -135,7 +135,7 @@ func (p *Project) ProcessTemplates() {
 			fmt.Println("New path was not able to be made", errMakeAll)
 			return
 		}
-		templatePath := fmt.Sprintf("%s/templates", os.Getenv("SCAFFOLDING_PATH"))
+		templatePath := fmt.Sprintf("%s/templates", os.Getenv("FRAME_PATH"))
 		blankInsert := ""
 		if p.UseBlank {
 			blankInsert = "_blank"

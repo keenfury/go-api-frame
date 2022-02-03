@@ -36,7 +36,7 @@ func main() {
 	// main reader for the command line
 	reader := bufio.NewReader(os.Stdin)
 	clearScreen()
-	fmt.Println("*** API Scaffolding Helper ***")
+	fmt.Println("*** Go API Frame Helper ***")
 
 	// this will be the main struct to hold all information passed to other processes
 	project := Project{ParseInput: ParseInput, Reader: reader}

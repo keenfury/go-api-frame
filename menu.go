@@ -89,7 +89,7 @@ func SqlMenu(project *Project, sqlType string) {
 
 	switch selection {
 	case "1":
-		project.LoadFile()
+		project.File()
 	case "2":
 		project.Paste()
 	case "3":

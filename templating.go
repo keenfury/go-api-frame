@@ -386,7 +386,7 @@ func (ep *EndPoint) BuildAPIHooks() {
 	// hook into common file
 	commonFile := fmt.Sprintf("%s/%s/common.go", ep.ProjectFile.FullPath, ep.SubDir)
 	if _, err := os.Stat(commonFile); os.IsNotExist(err) {
-		commonSrc := fmt.Sprintf("%s/templates/common.go", os.Getenv("SCAFFOLDING_PATH"))
+		commonSrc := fmt.Sprintf("%s/templates/common.go", os.Getenv("FRAME_PATH"))
 		commonDest := fmt.Sprintf("%s/%s/common.go", ep.ProjectFile.FullPath, ep.ProjectFile.SubDir)
 		bSrc, errSrc := ioutil.ReadFile(commonSrc)
 		if errSrc != nil {
