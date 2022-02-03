@@ -60,6 +60,7 @@ func main() {
 	}
 	project.DetermineMenu()
 	project.Protoc()
+	project.Fmt()
 	fmt.Printf("\n*** Remember to 'go mod tidy' ***\n\n")
 	fmt.Println("Bye!")
 }
@@ -115,4 +116,5 @@ func (n *Name) NameConverter() {
 	n.LowerCamel = camelLower
 	n.Lower = lower
 	n.AllLower = strings.ToLower(camel)
+	n.Upper = strings.ToUpper(camel)
 }

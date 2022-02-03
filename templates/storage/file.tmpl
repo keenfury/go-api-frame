@@ -20,7 +20,7 @@ func createFile(filePathWithName string) {
 }
 
 func OpenFile(name string, obj interface{}) error {
-	filePathWithName := fmt.Sprintf("%s/%s", config.StorageFilePath, name)
+	filePathWithName := fmt.Sprintf("%s/%s", config.StorageFileDir, name)
 	createFile(filePathWithName)
 	content, err := os.ReadFile(filePathWithName)
 	if err != nil {
@@ -33,7 +33,7 @@ func OpenFile(name string, obj interface{}) error {
 }
 
 func SaveFile(name string, obj interface{}) error {
-	filePathWithName := fmt.Sprintf("%s/%s", config.StorageFilePath, name)
+	filePathWithName := fmt.Sprintf("%s/%s", config.StorageFileDir, name)
 	createFile(filePathWithName)
 	content, err := json.Marshal(obj)
 	if err != nil {

@@ -352,7 +352,7 @@ func (ep *EndPoint) BuildGrpc() {
 
 func (ep *EndPoint) BuildAPIHooks() {
 	// hook into server file
-	apiFile := fmt.Sprintf("%s/cmd/api/main.go", ep.ProjectFile.FullPath)
+	apiFile := fmt.Sprintf("%s/cmd/rest/main.go", ep.ProjectFile.FullPath)
 	if _, err := os.Stat(apiFile); os.IsNotExist(err) {
 		fmt.Printf("%s is missing unable to write in hooks\n", apiFile)
 	} else {
@@ -368,6 +368,13 @@ func (ep *EndPoint) BuildAPIHooks() {
 			if errServerCmd != nil {
 				fmt.Printf("%s: error in replace for server [%s]\n", apiFile, errServerCmd)
 			}
+		}
+		onceReplace := `routeGroup := e.Group("v1") \/\/ change to match your uri prefix`
+		cmdOnceServer := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace server once text - do not remove ---/%s/g' %s`, onceReplace, apiFile)
+		execServerOnce := exec.Command("bash", "-c", cmdOnceServer)
+		errServerOnceCmd := execServerOnce.Run()
+		if errServerOnceCmd != nil {
+			fmt.Printf("%s: error in replace for server once [%s]\n", apiFile, errServerOnceCmd)
 		}
 		var mainReplace bytes.Buffer
 		tMain := template.Must(template.New("server").Parse(MAIN_COMMON_PATH))
@@ -386,6 +393,7 @@ func (ep *EndPoint) BuildAPIHooks() {
 	// hook into common file
 	commonFile := fmt.Sprintf("%s/%s/common.go", ep.ProjectFile.FullPath, ep.SubDir)
 	if _, err := os.Stat(commonFile); os.IsNotExist(err) {
+		// create file if not there
 		commonSrc := fmt.Sprintf("%s/templates/common.go", os.Getenv("FRAME_PATH"))
 		commonDest := fmt.Sprintf("%s/%s/common.go", ep.ProjectFile.FullPath, ep.ProjectFile.SubDir)
 		bSrc, errSrc := ioutil.ReadFile(commonSrc)
@@ -410,6 +418,36 @@ func (ep *EndPoint) BuildAPIHooks() {
 				fmt.Println("Error in replace for import:", errImportCmd)
 			}
 		}
+	}
+	// cont. with common.go
+	// header
+	var headerReplace bytes.Buffer
+	tHeader := template.Must(template.New("header").Parse(COMMON_HEADER))
+	errHeader := tHeader.Execute(&headerReplace, ep)
+	if errHeader != nil {
+		fmt.Println("Header template error:", errHeader)
+		return
+	}
+	cmdHeader := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace header text - do not remove ---/%s/g' %s`, headerReplace.String(), commonFile)
+	execHeader := exec.Command("bash", "-c", cmdHeader)
+	errHeaderCmd := execHeader.Run()
+	if errHeaderCmd != nil {
+		fmt.Println("Error in replace for header:", errHeaderCmd)
+	}
+
+	// section
+	var sectionReplace bytes.Buffer
+	tSection := template.Must(template.New("section").Parse(COMMON_SECTION))
+	errSection := tSection.Execute(&sectionReplace, ep)
+	if errSection != nil {
+		fmt.Println("Section template error:", errSection)
+		return
+	}
+	cmdSection := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace section text - do not remove ---/%s/g' %s`, sectionReplace.String(), commonFile)
+	execSection := exec.Command("bash", "-c", cmdSection)
+	errSectionCmd := execSection.Run()
+	if errSectionCmd != nil {
+		fmt.Println("Error in replace for server:", errSectionCmd)
 	}
 	// hook into grpc file
 	grpcFile := fmt.Sprintf("%s/cmd/grpc/main.go", ep.ProjectFile.FullPath)
@@ -456,33 +494,41 @@ func (ep *EndPoint) BuildAPIHooks() {
 			}
 		}
 	}
-	// header
-	var headerReplace bytes.Buffer
-	tHeader := template.Must(template.New("header").Parse(COMMON_HEADER))
-	errHeader := tHeader.Execute(&headerReplace, ep)
-	if errHeader != nil {
-		fmt.Println("Header template error:", errHeader)
-		return
-	}
-	cmdHeader := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace header text - do not remove ---/%s/g' %s`, headerReplace.String(), commonFile)
-	execHeader := exec.Command("bash", "-c", cmdHeader)
-	errHeaderCmd := execHeader.Run()
-	if errHeaderCmd != nil {
-		fmt.Println("Error in replace for header:", errHeaderCmd)
-	}
+	// hook into config.go
+	configFile := fmt.Sprintf("%s/config/config.go", ep.ProjectFile.FullPath)
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		fmt.Printf("%s is missing unable to write in hooks\n", configFile)
+	} else {
+		// env lines
+		configLines := []string{}
+		split := strings.Split(ep.ProjectFile.Storages, " ")
+		for _, s := range split {
+			if string(s[0]) == "s" {
+				configLines = append(configLines, "StorageSQL = true")
+			}
+			if string(s[0]) == "f" {
+				configLines = append(configLines, "StorageFile = true")
+				configLines = append(configLines, "SqlitePath = getEnvOrDefault({{.Name.Upper}}_SQLITE_PATH, \"/tmp/{{.Name.Lower}}.db\")")
+			}
+			if string(s[0]) == "m" {
+				configLines = append(configLines, "StorageMongo = true")
+				configLines = append(configLines, "StorageFileDir = getEnvOrDefault({{.Name.Upper}}_FILE_DIR, \"/tmp/\"")
+			}
+		}
+		configLine := strings.Join(configLines, "\n\t")
 
-	// section
-	var sectionReplace bytes.Buffer
-	tSection := template.Must(template.New("section").Parse(COMMON_SECTION))
-	errSection := tSection.Execute(&sectionReplace, ep)
-	if errSection != nil {
-		fmt.Println("Section template error:", errSection)
-		return
-	}
-	cmdSection := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace section text - do not remove ---/%s/g' %s`, sectionReplace.String(), commonFile)
-	execSection := exec.Command("bash", "-c", cmdSection)
-	errSectionCmd := execSection.Run()
-	if errSectionCmd != nil {
-		fmt.Println("Error in replace for server:", errSectionCmd)
+		var configReplace bytes.Buffer
+		tConfig := template.Must(template.New("config").Parse(configLine))
+		errConfig := tConfig.Execute(&configReplace, ep)
+		if errConfig != nil {
+			fmt.Printf("%s: template error [%s]\n", configFile, errConfig)
+		} else {
+			cmdConfig := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace config text - do not remove ---/%s/g' %s`, configReplace.String(), configFile)
+			execConfig := exec.Command("bash", "-c", cmdConfig)
+			errConfigCmd := execConfig.Run()
+			if errConfigCmd != nil {
+				fmt.Printf("%s: error in replace for config text [%s]\n", configFile, errConfigCmd)
+			}
+		}
 	}
 }

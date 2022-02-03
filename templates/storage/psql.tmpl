@@ -14,7 +14,7 @@ var PsqlDB *sqlx.DB
 var postgresConnection string
 
 func init() {
-	if config.StorageSQL && config.StoragePsql {
+	if config.StorageSQL {
 		postgresConnection = GetPostgresConnection()
 		var err error
 		PsqlDB, err = sqlx.Connect("postgres", postgresConnection)

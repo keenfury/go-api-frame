@@ -75,6 +75,7 @@ type (
 		LowerCamel string
 		Abbr       string
 		AllLower   string
+		Upper      string
 	}
 
 	Column struct {

@@ -12,7 +12,7 @@ import (
 var GormDB *gorm.DB
 
 func init() {
-	if config.StorageSQL && config.StorageGorm {
+	if config.StorageSQL {
 		connectionStr := Get{{.SQLProviderConnection}}()
 		var err error
 		GormDB, err = gorm.Open({{.SQLProviderLower}}.Open(connectionStr), &gorm.Config{NamingStrategy: schema.NamingStrategy{SingularTable: true}})

@@ -237,3 +237,12 @@ func (p *Project) Protoc() {
 		fmt.Printf("Error executing protoc command: %s", errProtoCmd)
 	}
 }
+
+func (p *Project) Fmt() {
+	cmd := "go fmt ./..."
+	execFmt := exec.Command("bash", "-c", cmd)
+	errFmtCmd := execFmt.Run()
+	if errFmtCmd != nil {
+		fmt.Printf("Error executing fmt command: %s", errFmtCmd)
+	}
+}
