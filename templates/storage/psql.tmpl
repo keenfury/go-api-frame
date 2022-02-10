@@ -13,8 +13,8 @@ import (
 var PsqlDB *sqlx.DB
 var postgresConnection string
 
-func init() {
-	if config.StorageSQL {
+func PostgresInit() *sqlx.DB {
+	if PsqlDB == nil {
 		postgresConnection = GetPostgresConnection()
 		var err error
 		PsqlDB, err = sqlx.Connect("postgres", postgresConnection)
@@ -22,6 +22,7 @@ func init() {
 			log.Panicln("Could not connect with connection string:", postgresConnection)
 		}
 	}
+	return PsqlDB
 }
 
 func GetPostgresConnection() string {

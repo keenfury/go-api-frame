@@ -11,8 +11,8 @@ import (
 
 var MongoDB *mongo.Client
 
-func init() {
-	if config.StorageMongo {
+func MongoInit() *mongo.Client {
+	if MongoDB == nil {
 		var errNew error
 		MongoDB, errNew = mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 		if errNew != nil {
@@ -23,4 +23,5 @@ func init() {
 			log.Panicln("Unable to ping: mongo")
 		}
 	}
+	return MongoDB
 }

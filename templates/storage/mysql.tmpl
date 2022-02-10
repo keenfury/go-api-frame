@@ -10,18 +10,19 @@ import (
 	"{{.ProjectPath}}/config"
 )
 
-var MySqlDB *sqlx.DB
+var MysqlDB *sqlx.DB
 var mySqlConnection string
 
-func init() {
-	if config.StorageSQL {
+func MySqlInit() *sqlx.DB {
+	if MysqlDB == nil {
 		mySqlConnection = GetMySqlConnection()
 		var err error
-		MySqlDB, err = sqlx.Connect("mysql", mySqlConnection)
+		MysqlDB, err = sqlx.Connect("mysql", mySqlConnection)
 		if err != nil {
 			log.Panicln("Could not connect with connection string:", mySqlConnection)
 		}
 	}
+	return MysqlDB
 }
 
 func GetMySqlConnection() string {

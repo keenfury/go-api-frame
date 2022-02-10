@@ -40,6 +40,10 @@ type (
 		ManagerGetRow          string
 		ManagerPostRows        string
 		ManagerPatchRows       string
+		ManagerGetTestRow      string
+		ManagerPostTestRow     string
+		ManagerPatchTestRow    string
+		ManagerDeleteTestRow   string
 		ManagerUtilPath        string
 		DataTable              string
 		DataTablePrefix        string

@@ -11,8 +11,8 @@ import (
 
 var GormDB *gorm.DB
 
-func init() {
-	if config.StorageSQL {
+func GormInit() *gorm.DB {
+	if GormDB == nil {
 		connectionStr := Get{{.SQLProviderConnection}}()
 		var err error
 		GormDB, err = gorm.Open({{.SQLProviderLower}}.Open(connectionStr), &gorm.Config{NamingStrategy: schema.NamingStrategy{SingularTable: true}})
@@ -20,4 +20,5 @@ func init() {
 			log.Panicln("Could not connect with connection string:", connectionStr)
 		}
 	}
+	return GormDB
 }

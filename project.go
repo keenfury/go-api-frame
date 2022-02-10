@@ -14,17 +14,17 @@ import (
 var tmplFiles = []string{"model", "handler", "manager", "grpc"} // TODO: sql is optional depending on which data storages they want to template, dynamically build this
 
 func (p *Project) LoadProjectFile() bool {
-	if _, errStat := os.Stat("./.scaffold"); os.IsNotExist(errStat) {
+	if _, errStat := os.Stat("./.frame"); os.IsNotExist(errStat) {
 		return false
 	}
-	bContent, errRead := os.ReadFile("./.scaffold")
+	bContent, errRead := os.ReadFile("./.frame")
 	if errRead != nil {
-		fmt.Printf("Error reading from .scaffold: %s", errRead)
+		fmt.Printf("Error reading from .frame: %s", errRead)
 		return true
 	}
 	errUnmarshal := json.Unmarshal(bContent, &p.ProjectFile)
 	if errUnmarshal != nil {
-		fmt.Printf("Error extracting data from .scaffold: %s", errUnmarshal)
+		fmt.Printf("Error extracting data from .frame: %s", errUnmarshal)
 		return true
 	}
 	return true
@@ -36,7 +36,7 @@ func (p *Project) SaveProjectFile() {
 		fmt.Println("Saving project file: unable to save -", errMarshal)
 		return
 	}
-	errSave := os.WriteFile("./.scaffold", bContent, 0644)
+	errSave := os.WriteFile("./.frame", bContent, 0644)
 	if errSave != nil {
 		fmt.Println("Saving project file: unable to save -", errSave)
 	}
@@ -199,6 +199,27 @@ func (p *Project) ProcessTemplates() {
 			if err != nil {
 				fmt.Println("Execution of template:", err)
 			}
+			// process _test file
+			tmplPath = fmt.Sprintf("%s/%s/%s_test.tmpl", templatePath, tmpl, tmpl)
+			if _, err := os.Stat(tmplPath); !os.IsNotExist(err) {
+				t, errParse := template.ParseFiles(tmplPath)
+				if errParse != nil {
+					fmt.Printf("Template could not parse file: %s; %s", tmplPath, errParse)
+					fmt.Println("Exiting...")
+					return
+				}
+				newFileName := fmt.Sprintf("%s/%s_test.go", savePath, tmpl)
+				file, err := os.Create(newFileName)
+				if err != nil {
+					fmt.Println("File:", tmpl, "was not able to be created", err)
+					fmt.Println("Exiting...")
+					return
+				}
+				err = t.Execute(file, ep)
+				if err != nil {
+					fmt.Println("Execution of template:", err)
+				}
+			}
 		}
 		// save storage
 		for _, tmpl := range storageFiles {
@@ -230,19 +251,32 @@ func (p *Project) ProcessTemplates() {
 }
 
 func (p *Project) Protoc() {
-	cmd := fmt.Sprintf("cd pkg/proto && protoc --go_out=. --go_opt=paths=source_relative    --go-grpc_out=. --go-grpc_opt=paths=source_relative %s.proto", p.ProjectFile.AppName)
+	cmdDir := fmt.Sprintf("%s/pkg/proto", p.ProjectFile.FullPath)
+	os.Chdir(cmdDir)
+	cmd := fmt.Sprintf("protoc --go_out=. --go_opt=paths=source_relative    --go-grpc_out=. --go-grpc_opt=paths=source_relative %s.proto", p.ProjectFile.AppName)
 	execProto := exec.Command("bash", "-c", cmd)
 	errProtoCmd := execProto.Run()
 	if errProtoCmd != nil {
-		fmt.Printf("Error executing protoc command: %s", errProtoCmd)
+		fmt.Printf("Error executing protoc command: %s\n", errProtoCmd)
 	}
 }
 
 func (p *Project) Fmt() {
+	os.Chdir(p.ProjectFile.FullPath)
 	cmd := "go fmt ./..."
 	execFmt := exec.Command("bash", "-c", cmd)
 	errFmtCmd := execFmt.Run()
 	if errFmtCmd != nil {
-		fmt.Printf("Error executing fmt command: %s", errFmtCmd)
+		fmt.Printf("Error executing fmt command: %s\n", errFmtCmd)
+	}
+}
+
+func (p *Project) Generate() {
+	os.Chdir(p.ProjectFile.FullPath)
+	cmd := "go generate ./..."
+	execGenerate := exec.Command("bash", "-c", cmd)
+	errGenerateCmd := execGenerate.Run()
+	if errGenerateCmd != nil {
+		fmt.Printf("Error executing generate command: %s\n", errGenerateCmd)
 	}
 }

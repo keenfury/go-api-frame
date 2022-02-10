@@ -8,6 +8,7 @@ import (
 	{{.ManagerUtilPath}}
 )
 
+//go:generate mockgen -source=manager.go -destination=mock.go -package={{.AllLower}}
 type (
 	Data{{.Camel}}Adapter interface {
 		Get(*{{.Camel}}) error

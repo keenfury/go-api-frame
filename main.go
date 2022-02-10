@@ -51,7 +51,7 @@ func main() {
 		// defer save project file
 		defer project.SaveProjectFile()
 	} else {
-		fmt.Println("Quitting app, remove .scaffold is present, restart app")
+		fmt.Println("Quitting app, remove .frame is present, restart app")
 		project.ParseInput(project.Reader)
 	}
 
@@ -61,6 +61,7 @@ func main() {
 	project.DetermineMenu()
 	project.Protoc()
 	project.Fmt()
+	project.Generate()
 	fmt.Printf("\n*** Remember to 'go mod tidy' ***\n\n")
 	fmt.Println("Bye!")
 }

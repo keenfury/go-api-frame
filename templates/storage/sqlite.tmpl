@@ -12,16 +12,17 @@ import (
 var SqliteDB *sqlx.DB
 var sqliteConnection string
 
-func init() {
-	sqliteConnection = GetSqliteConnection()
-	if config.StorageSQL {
+func SqliteInit() *sqlx.DB {
+	if SqliteDB == nil {
 		var err error
+		sqliteConnection = GetSqliteConnection()
 		SqliteDB, err = sqlx.Open("sqlite3", sqliteConnection)
 		if err != nil {
 			log.Panicln("Could not connect with connection string:", sqliteConnection)
 		}
 		SqliteDB.SetMaxOpenConns(1)
 	}
+	return SqliteDB
 }
 
 func GetSqliteConnection() {

@@ -1,0 +1,156 @@
+package {{.AllLower}}
+
+import (
+	"encoding/json"
+	"fmt"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/guregu/null.v3"
+)
+
+func TestManager{{.Camel}}_Get(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockData{{.Camel}} := NewMockData{{.Camel}}Adapter(ctrl)
+
+	tests := []struct {
+		name    string
+		{{.Abbr}} *{{.Camel}}
+		wantErr bool
+		calls   []*gomock.Call
+	}{
+		{{.ManagerGetTestRow}}
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Manager{{.Camel}}{data{{.Camel}}: mockData{{.Camel}}}
+			err := m.Get(tt.{{.Abbr}})
+			if !tt.wantErr {
+				assert.Nil(t, err, "Manager{{.Camel}}.Get().%s => expected not error; got: %s", tt.name, err)
+			}
+			if tt.wantErr {
+				assert.NotNil(t, err, "Manager{{.Camel}}.Get().%s => expected error: got nil", tt.name)
+			}
+		})
+	}
+}
+
+func TestManager{{.Camel}}_Post(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockData{{.Camel}} := NewMockData{{.Camel}}Adapter(ctrl)
+
+	tests := []struct {
+		name    string
+		{{.Abbr}}     *{{.Camel}}
+		wantErr bool
+		calls   []*gomock.Call
+	}{
+		{{.ManagerPostTestRow}}
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Manager{{.Camel}}{data{{.Camel}}: mockData{{.Camel}}}
+			err := m.Post(tt.{{.Abbr}})
+			if !tt.wantErr {
+				assert.Nil(t, err, "Manager{{.Camel}}.Post().%s => expected not error; got: %s", tt.name, err)
+			}
+			if tt.wantErr {
+				assert.NotNil(t, err, "Manager{{.Camel}}.Post().%s => expected error: got nil", tt.name)
+			}
+		})
+	}
+}
+
+func TestManager{{.Camel}}_Patch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockData{{.Camel}} := NewMockData{{.Camel}}Adapter(ctrl)
+
+	tests := []struct {
+		name    string
+		body    []byte
+		wantErr bool
+		calls   []*gomock.Call
+	}{
+		{
+			"successful",
+			[]byte(`{"Id": 1}`),
+			false,
+			[]*gomock.Call{
+				mockData{{.Camel}}.EXPECT().Get(gomock.Any()).Return(nil),
+				mockData{{.Camel}}.EXPECT().Patch(gomock.Any()).Return(nil),
+			},
+		},
+		{
+			"invalid id",
+			[]byte(`{"Id": 1}`),
+			true,
+			[]*gomock.Call{
+				mockData{{.Camel}}.EXPECT().Get(gomock.Any()).Return(fmt.Errorf("missing record")),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Manager{{.Camel}}{data{{.Camel}}: mockData{{.Camel}}}
+			err := m.Patch(tt.body)
+			if !tt.wantErr {
+				assert.Nil(t, err, "Manager{{.Camel}}.Patch().%s => expected not error; got: %s", tt.name, err)
+			}
+			if tt.wantErr {
+				assert.NotNil(t, err, "Manager{{.Camel}}.Patch().%s => expected error: got nil", tt.name)
+			}
+		})
+	}
+}
+
+func TestManager{{.Camel}}_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockData{{.Camel}} := NewMockData{{.Camel}}Adapter(ctrl)
+
+	tests := []struct {
+		name    string
+		{{.Abbr}}     *{{.Camel}}
+		wantErr bool
+		calls   []*gomock.Call
+	}{
+		{{.ManagerDeleteTestRow}}
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Manager{{.Camel}}{data{{.Camel}}: mockData{{.Camel}}}
+			err := m.Delete(tt.{{.Abbr}})
+			if !tt.wantErr {
+				assert.Nil(t, err, "Manager{{.Camel}}.Delete().%s => expected not error; got: %s", tt.name, err)
+			}
+			if tt.wantErr {
+				assert.NotNil(t, err, "Manager{{.Camel}}.Delete().%s => expected error: got nil", tt.name)
+			}
+		})
+	}
+}
+
+func TestValidJson(t *testing.T) {
+	tests := []struct {
+		name      string
+		jsonValue json.RawMessage
+		want      bool
+	}{
+		{
+			"successful",
+			[]byte(`{"test": "again"}`),
+			true,
+		},
+		{
+			"failed",
+			[]byte(`{"test": again"}`),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ValidJson(tt.jsonValue)
+			assert.Equal(t, tt.want, got, "ValidJson.%s => expected %t; got %t", tt.name, tt.want, got)
+		})
+	}
+}

@@ -13,7 +13,8 @@ type (
 )
 
 func InitSQL() *SQL{{.Camel}} {
-	return &SQL{{.Camel}}{DB: stor.{{.SQLProvider}}DB}
+	db := stor.{{.SQLProvider}}Init()
+	return &SQL{{.Camel}}{DB: db}
 }
 
 func (d *SQL{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
