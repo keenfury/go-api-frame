@@ -43,6 +43,7 @@ func main() {
 
 	// see if projectFile is able to load
 	exists := project.LoadProjectFile()
+	fmt.Println("exists:", exists)
 	if !exists {
 		// if not create new one, save values
 		exists = project.CreateProjectFile()

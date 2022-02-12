@@ -4,17 +4,28 @@ import "fmt"
 
 type (
 	PostTest struct {
-		Name      string
-		ForColumn string
-		Failure   bool
+		Name         string
+		ForColumn    string
+		ColumnLength int
+		Failure      bool
 	}
 
 	ColumnTest struct {
-		Name   string
-		Length int
 		GoType string
 	}
 )
+
+var ColumnTests map[string]ColumnTest
+
+func InitializeColumnTests() {
+	ColumnTests = make(map[string]ColumnTest)
+}
+
+func AppendColumnTest(name, goType string) {
+	if _, ok := ColumnTests[name]; !ok {
+		ColumnTests[name] = ColumnTest{GoType: goType}
+	}
+}
 
 func TranslateType(columnName, columnType string, length int, valid bool) string {
 	switch columnType {
