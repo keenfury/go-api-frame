@@ -15,7 +15,7 @@ func (d *File{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
 		return err
 	}
 	for _, {{.Abbr}}Obj := range {{.Abbr}}s {
-		if {{.FileKeys }} {
+		if {{.FileKeys}} {
 			{{.FileGetColumns}}
 			break
 		}
@@ -57,7 +57,7 @@ func (d *File{{.Camel}}) Delete({{.Abbr}} *{{.Camel}}) error {
 		return err
 	}
 	for i, {{.Abbr}}Obj := range {{.Abbr}}s {
-		if {{.FileKeys }} {
+		if {{.FileKeys}} {
 			{{.Abbr}}s = append({{.Abbr}}s[:i], {{.Abbr}}s[i+1:]...)
 			break
 		}

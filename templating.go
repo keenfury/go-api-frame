@@ -99,6 +99,7 @@ func (ep *EndPoint) BuildHandlerTemplate() {
 func (ep *EndPoint) BuildManagerTemplate() {
 	getDeleteRow := ""
 	postRow := "\t"
+	putRow := ""
 	patchRow := ""
 	patchSearch := ""
 	setArgs := ""
@@ -134,43 +135,58 @@ func (ep *EndPoint) BuildManagerTemplate() {
 		}
 	}
 	patchRow = patchSearch + fmt.Sprintf(MANAGER_PATCH_STRUCT_STMT, ep.Abbr, ep.Camel, setArgs) + fmt.Sprintf(MANAGER_PATCH_GET_STMT, ep.Abbr)
-	postTests := []PostTest{{Name: "successful", Failure: false}}
+	putTests := []PostPutTest{{Name: "successful", Failure: false}}
+	postTests := []PostPutTest{{Name: "successful", Failure: false}}
 	InitializeColumnTests()
 	for _, c := range ep.Columns {
-		// post rows
 		columnTestStrAdded := false
+		// put rows
+		if c.PrimaryKey {
+			putRow += fmt.Sprintf(MANAGER_GET_INT, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
+			AppendColumnTest(c.ColumnName.Camel, c.GoType, true)
+			putTests = append(putTests, PostPutTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
+			columnTestStrAdded = true
+		}
+		// post rows
 		if c.GoType == "string" || c.GoType == "null.String" {
 			if c.DBType == "uuid" {
 				postRow += fmt.Sprintf(MANAGER_POST_UUID, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-				// columnTestStr := TranslateType(c.ColumnName.Camel, c.GoType, int(c.Length), false)
-				AppendColumnTest(c.ColumnName.Camel, c.GoType)
-				postTests = append(postTests, PostTest{Name: "invalid UUID", Failure: true, ForColumn: c.ColumnName.Camel})
+				putRow += fmt.Sprintf(MANAGER_POST_UUID, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
+				AppendColumnTest(c.ColumnName.Camel, c.GoType, false)
+				postTests = append(postTests, PostPutTest{Name: "invalid UUID", Failure: true, ForColumn: c.ColumnName.Camel})
+				putTests = append(putTests, PostPutTest{Name: "invalid UUID", Failure: true, ForColumn: c.ColumnName.Camel})
 				columnTestStrAdded = true
 			} else {
 				if !c.Null {
 					postRow += fmt.Sprintf(MANAGER_POST_NULL, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-					AppendColumnTest(c.ColumnName.Camel, c.GoType)
-					postTests = append(postTests, PostTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
+					putRow += fmt.Sprintf(MANAGER_POST_NULL, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
+					AppendColumnTest(c.ColumnName.Camel, c.GoType, false)
+					postTests = append(postTests, PostPutTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
+					putTests = append(putTests, PostPutTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
 					columnTestStrAdded = true
 				}
 				if c.Length > 0 {
 					postRow += fmt.Sprintf(MANAGER_POST_VARCHAR_LEN, ep.Abbr, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.Length, c.ColumnName.Camel, c.Length)
-					AppendColumnTest(c.ColumnName.Camel, c.GoType)
-					postTests = append(postTests, PostTest{Name: fmt.Sprintf("length %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel, ColumnLength: int(c.Length)})
+					putRow += fmt.Sprintf(MANAGER_POST_VARCHAR_LEN, ep.Abbr, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.Length, c.ColumnName.Camel, c.Length)
+					AppendColumnTest(c.ColumnName.Camel, c.GoType, false)
+					postTests = append(postTests, PostPutTest{Name: fmt.Sprintf("length %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel, ColumnLength: int(c.Length)})
+					putTests = append(putTests, PostPutTest{Name: fmt.Sprintf("length %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel, ColumnLength: int(c.Length)})
 					columnTestStrAdded = true
 				}
 			}
 		} else {
 			if !c.Null && !c.PrimaryKey {
 				postRow += fmt.Sprintf(MANAGER_POST_NULL, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
-				AppendColumnTest(c.ColumnName.Camel, c.GoType)
-				postTests = append(postTests, PostTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
+				putRow += fmt.Sprintf(MANAGER_POST_NULL, ep.Abbr, c.ColumnName.Camel, c.ColumnName.Camel)
+				AppendColumnTest(c.ColumnName.Camel, c.GoType, false)
+				postTests = append(postTests, PostPutTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
+				putTests = append(putTests, PostPutTest{Name: fmt.Sprintf("invalid %s", c.ColumnName.LowerCamel), Failure: true, ForColumn: c.ColumnName.Camel})
 				columnTestStrAdded = true
 			}
 		}
 		if !columnTestStrAdded && c.Null && !c.PrimaryKey {
 			// add column to all the other tests with good data
-			AppendColumnTest(c.ColumnName.Camel, c.GoType)
+			AppendColumnTest(c.ColumnName.Camel, c.GoType, false)
 		}
 		// patch rows
 		if c.GoType == "null.String" {
@@ -193,6 +209,7 @@ func (ep *EndPoint) BuildManagerTemplate() {
 			patchRow += fmt.Sprintf(MANAGER_PATCH_JSON_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 		}
 		if c.GoType == "null.Time" {
+			ep.ManagerImportTest = "\n\t\"time\""
 			patchRow += fmt.Sprintf(MANAGER_PATCH_TIME_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.LowerCamel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			ep.ManagerTime = "\n\t\"time\""
 		}
@@ -209,13 +226,14 @@ func (ep *EndPoint) BuildManagerTemplate() {
 	}
 	ep.ManagerGetRow = strings.TrimRight(getDeleteRow, "\n")
 	ep.ManagerPostRows = strings.TrimRight(postRow, "\n")
+	ep.ManagerPutRows = strings.TrimRight(putRow, "\n")
 	ep.ManagerPatchRows = strings.TrimRight(patchRow, "\n")
 	managerGetSuccessfulRow := ""
 	managerGetFailureRow := ""
 	managerDeleteSuccessfulRow := ""
 	managerDeleteFailureRow := ""
 	if len(getDeleteKeyTestSuccessful) > 0 {
-		managerGetSuccessfulRow = fmt.Sprintf("{\n\t\t\t\"successful\",\n\t\t\t&%s{%s},\n\t\t\tfalse,\n\t\t\t[]*gomock.Call{\n\t\t\t\tmockData%s.EXPECT().Get(gomock.Any()).Return(nil),\n\t\t\t},\n\t\t},", ep.Camel, strings.Join(getDeleteKeyTestSuccessful, ", "), ep.Camel)
+		managerGetSuccessfulRow = fmt.Sprintf("{\n\t\t\t\"successful\",\n\t\t\t&%s{%s},\n\t\t\tfalse,\n\t\t\t[]*gomock.Call{\n\t\t\t\tmockData%s.EXPECT().Read(gomock.Any()).Return(nil),\n\t\t\t},\n\t\t},", ep.Camel, strings.Join(getDeleteKeyTestSuccessful, ", "), ep.Camel)
 		managerDeleteSuccessfulRow = fmt.Sprintf("{\n\t\t\t\"successful\",\n\t\t\t&%s{%s},\n\t\t\tfalse,\n\t\t\t[]*gomock.Call{\n\t\t\t\tmockData%s.EXPECT().Delete(gomock.Any()).Return(nil),\n\t\t\t},\n\t\t},", ep.Camel, strings.Join(getDeleteKeyTestSuccessful, ", "), ep.Camel)
 	}
 	if len(getDeleteKeyTestFailure) > 0 {
@@ -225,13 +243,15 @@ func (ep *EndPoint) BuildManagerTemplate() {
 	ep.ManagerGetTestRow = fmt.Sprintf("%s\n\t\t%s", managerGetSuccessfulRow, managerGetFailureRow)
 	ep.ManagerDeleteTestRow = fmt.Sprintf("%s\n\t\t%s", managerDeleteSuccessfulRow, managerDeleteFailureRow)
 	managerPostTestRow := []string{}
+	managerPutTestRow := []string{}
+
 	for _, postTest := range postTests {
 		call := ""
 		if !postTest.Failure {
-			call = fmt.Sprintf("mockData%s.EXPECT().Post(gomock.Any()).Return(nil).AnyTimes(),\n\t\t\t", ep.Camel)
+			call = fmt.Sprintf("mockData%s.EXPECT().Create(gomock.Any()).Return(nil).AnyTimes(),\n\t\t\t", ep.Camel)
 		}
 		columnStr := []string{}
-		for name, column := range ColumnTests {
+		for name, column := range PostTests {
 			columnValid := true
 			columnLength := 0
 			if postTest.ForColumn == name {
@@ -244,7 +264,27 @@ func (ep *EndPoint) BuildManagerTemplate() {
 		}
 		managerPostTestRow = append(managerPostTestRow, fmt.Sprintf("{\n\t\t\t\"%s\",\n\t\t\t&%s{%s},\n\t\t\t%t,\n\t\t\t[]*gomock.Call{%s},\n\t\t},", postTest.Name, ep.Camel, strings.Join(columnStr, ", "), postTest.Failure, call))
 	}
+	for _, putTest := range putTests {
+		call := ""
+		if !putTest.Failure {
+			call = fmt.Sprintf("mockData%s.EXPECT().Update(gomock.Any()).Return(nil).AnyTimes(),\n\t\t\t", ep.Camel)
+		}
+		columnStr := []string{}
+		for name, column := range PutTests {
+			columnValid := true
+			columnLength := 0
+			if putTest.ForColumn == name {
+				columnValid = false
+				if putTest.ColumnLength > 0 {
+					columnLength = putTest.ColumnLength
+				}
+			}
+			columnStr = append(columnStr, TranslateType(name, column.GoType, columnLength, columnValid))
+		}
+		managerPutTestRow = append(managerPutTestRow, fmt.Sprintf("{\n\t\t\t\"%s\",\n\t\t\t&%s{%s},\n\t\t\t%t,\n\t\t\t[]*gomock.Call{%s},\n\t\t},", putTest.Name, ep.Camel, strings.Join(columnStr, ", "), putTest.Failure, call))
+	}
 	ep.ManagerPostTestRow = strings.Join(managerPostTestRow, "\n\t\t")
+	ep.ManagerPutTestRow = strings.Join(managerPutTestRow, "\n\t\t")
 }
 
 func (ep *EndPoint) BuildDataTemplate() {
@@ -353,6 +393,7 @@ func (ep *EndPoint) BuildGrpc() {
 		return
 	}
 	lines := []string{}
+	lines = append(lines, "")
 	lines = append(lines, fmt.Sprintf("message %s {", ep.Camel))
 	for i, column := range ep.Columns {
 		idx := i + 1 // start the count at 1
@@ -574,7 +615,8 @@ func (ep *EndPoint) BuildAPIHooks() {
 			}
 			if string(s[0]) == "m" {
 				configLines = append(configLines, "StorageMongo = true")
-				configLines = append(configLines, "StorageFileDir = getEnvOrDefault({{.Name.Upper}}_FILE_DIR, \"/tmp/\"")
+				configLines = append(configLines, "MongoHost = getEnvOrDefault({{.Name.Upper}}_MONGO_HOST, \"localhost\"")
+				configLines = append(configLines, "MongoPort = getEnvOrDefault({{.Name.Upper}}_MONGO_PORT, \"27017\"")
 			}
 		}
 		configLine := strings.Join(configLines, "\n\t")

@@ -6,10 +6,10 @@ import (
 
 type (
     Storage{{.Camel}}Adapter interface {
-        Get(*{{.Camel}}) error
-        List(*[]{{.Camel}}) error
-        Post(*{{.Camel}}) error
-        Patch(*{{.Camel}}) error
+        Read(*{{.Camel}}) error
+        ReadAll(*[]{{.Camel}}) error
+        Create(*{{.Camel}}) error
+        Update(*{{.Camel}}) error
         Delete(*{{.Camel}}) error
     }
 

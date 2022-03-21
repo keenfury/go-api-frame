@@ -11,10 +11,10 @@ import (
 //go:generate mockgen -source=manager.go -destination=mock.go -package={{.AllLower}}
 type (
 	Data{{.Camel}}Adapter interface {
-		Get(*{{.Camel}}) error
-		List(*[]{{.Camel}}) error
-		Post(*{{.Camel}}) error
-		Patch(*{{.Camel}}) error
+		Read(*{{.Camel}}) error
+		ReadAll(*[]{{.Camel}}) error
+		Create(*{{.Camel}}) error
+		Update(*{{.Camel}}) error
 		Delete(*{{.Camel}}) error
 	}
 
@@ -29,16 +29,21 @@ func NewManager{{.Camel}}(c{{.Abbr}} Data{{.Camel}}Adapter) *Manager{{.Camel}} {
 
 func (m *Manager{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
 {{.ManagerGetRow}}
-	return m.data{{.Camel}}.Get({{.Abbr}})
+	return m.data{{.Camel}}.Read({{.Abbr}})
 }
 
 func (m *Manager{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
-	return m.data{{.Camel}}.List({{.Abbr}})
+	return m.data{{.Camel}}.ReadAll({{.Abbr}})
 }
 
 func (m *Manager{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
 {{.ManagerPostRows}}
-	return m.data{{.Camel}}.Post({{.Abbr}})
+	return m.data{{.Camel}}.Create({{.Abbr}})
+}
+
+func (m *Manager{{.Camel}}) Put({{.Abbr}} *{{.Camel}}) error {
+{{.ManagerPutRows}}
+	return m.data{{.Camel}}.Update({{.Abbr}})
 }
 
 func (m *Manager{{.Camel}}) Patch(body []byte) error {
@@ -47,7 +52,7 @@ func (m *Manager{{.Camel}}) Patch(body []byte) error {
 		return ae.BindError(errP)
 	}
 {{.ManagerPatchRows}}
-	return m.data{{.Camel}}.Patch({{.Abbr}})
+	return m.data{{.Camel}}.Update({{.Abbr}})
 }
 
 func (m *Manager{{.Camel}}) Delete({{.Abbr}} *{{.Camel}}) error {

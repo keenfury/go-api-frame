@@ -63,7 +63,7 @@ func main() {
 	project.Protoc()
 	project.Fmt()
 	project.Generate()
-	fmt.Printf("\n*** Remember to 'go mod tidy' ***\n\n")
+	fmt.Printf("\n*** Remember to 'go get -u all && go mod tidy' ***\n\n")
 	fmt.Println("Bye!")
 }
 

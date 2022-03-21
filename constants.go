@@ -21,7 +21,8 @@ const (
 	HANDLER_GET_DELETE  = `	%s := &%s{%s}`       // CamelLower, Camel, HandlerArgSet
 	MANAGER_GET_INT     = `	if %s.%s < 1 {
 		return ae.MissingParamError("%s")
-	}`  // Abbr, Camel, Camel
+	}
+	`  // Abbr, Camel, Camel
 
 	MANAGER_GET_STRING = `	if %s.%s == "" {
 		return ae.MissingParamError("%s")

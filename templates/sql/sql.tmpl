@@ -18,7 +18,7 @@ func InitSQL() *SQL{{.Camel}} {
 	return &SQL{{.Camel}}{DB: db}
 }
 
-func (d *SQL{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
+func (d *SQL{{.Camel}}) Read({{.Abbr}} *{{.Camel}}) error {
 	sqlGet := {{.DataTablePrefix}}`
 		select
 			{{.SqlGetColumns}}
@@ -29,7 +29,7 @@ func (d *SQL{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
+func (d *SQL{{.Camel}}) ReadAll({{.Abbr}} *[]{{.Camel}}) error {
 	sqlList := {{.DataTablePrefix}}`
 		select
 			{{.SqlGetColumns}}
@@ -40,7 +40,7 @@ func (d *SQL{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
+func (d *SQL{{.Camel}}) Create({{.Abbr}} *{{.Camel}}) error {
 	sqlPost := {{.DataTablePrefix}}`
 		insert into {{.DataTable}} (
 			{{.SqlPostColumns}}
@@ -56,7 +56,7 @@ func (d *SQL{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) Patch({{.Abbr}} *{{.Camel}}) error {
+func (d *SQL{{.Camel}}) Update({{.Abbr}} *{{.Camel}}) error {
 	sqlPatch := {{.DataTablePrefix}}`
 		update {{.DataTable}} set
 			{{.SqlPatchColumns}}

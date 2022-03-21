@@ -12,7 +12,7 @@ func storageMenu(reader *bufio.Reader) (bool, bool, string) {
 	useORM := AskYesOrNo(reader, msg)
 	storage := []string{}
 	messages := []string{"SQL Options", "Choice which SQL implementation"}
-	prompts := []string{"(p)ostgres", "(m)ysql", "(s)qlite3"}
+	prompts := []string{"(P)ostgres", "(M)ysql", "(S)qlite3"}
 	acceptablePrompts := []string{"p", "m", "s"}
 	exitEarly := false
 StorageLoop:

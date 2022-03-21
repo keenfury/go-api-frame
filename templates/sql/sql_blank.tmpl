@@ -17,19 +17,19 @@ func InitSQL() *SQL{{.Camel}} {
 	return &SQL{{.Camel}}{DB: db}
 }
 
-func (d *SQL{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
+func (d *SQL{{.Camel}}) Read({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
+func (d *SQL{{.Camel}}) ReadAll({{.Abbr}} *[]{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
+func (d *SQL{{.Camel}}) Create({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *SQL{{.Camel}}) Patch({{.Abbr}} *{{.Camel}}) error {
+func (d *SQL{{.Camel}}) Update({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 

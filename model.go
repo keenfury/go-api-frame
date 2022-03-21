@@ -39,12 +39,14 @@ type (
 		ManagerTime            string
 		ManagerGetRow          string
 		ManagerPostRows        string
+		ManagerPutRows         string
 		ManagerPatchRows       string
 		ManagerGetTestRow      string
 		ManagerPostTestRow     string
-		ManagerPatchTestRow    string
+		ManagerPutTestRow      string
 		ManagerDeleteTestRow   string
 		ManagerUtilPath        string
+		ManagerImportTest      string
 		DataTable              string
 		DataTablePrefix        string
 		DataTablePostfix       string

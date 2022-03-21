@@ -15,6 +15,7 @@ type (
 		Get(*{{.Camel}}) error
 		List(*[]{{.Camel}}) error
 		Post(*{{.Camel}}) error
+		Put(*{{.Camel}}) error
 		Patch([]byte) error
 		Delete(*{{.Camel}}) error
 	}
@@ -32,6 +33,7 @@ func (h *Handler{{.Camel}}) Load{{.Camel}}Routes(eg *echo.Group) {
 	eg.GET("/{{.AllLower}}/{{.HandlerGetDeleteUrl}}", h.Get)
 	eg.GET("/{{.AllLower}}/list", h.List)
 	eg.POST("/{{.AllLower}}", h.Post)
+	eg.PUT("/{{.AllLower}}", h.Put)
 	eg.PATCH("/{{.AllLower}}", h.Patch)
 	eg.DELETE("/{{.AllLower}}/{{.HandlerGetDeleteUrl}}", h.Delete)
 }
@@ -62,6 +64,19 @@ func (h *Handler{{.Camel}}) Post(c echo.Context) error {
 		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), false, 0, 0, 0))
 	}
 	if err := h.manager{{.Camel}}.Post({{.Abbr}}); err != nil {
+		be := err.(ae.ApiError).BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+	}
+	return c.JSON(http.StatusOK, s.NewOutput(*{{.Abbr}}, true, 0 ,0, 0))
+}
+
+func (h *Handler{{.Camel}}) Put(c echo.Context) error {
+	{{.Abbr}} := &{{.Camel}}{}
+	if err := c.Bind({{.Abbr}}); err != nil {
+		bindErr := ae.BindError(err)
+		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), false, 0, 0, 0))
+	}
+	if err := h.manager{{.Camel}}.Put({{.Abbr}}); err != nil {
 		be := err.(ae.ApiError).BodyError()
 		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
 	}
