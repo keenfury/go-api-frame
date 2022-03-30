@@ -8,105 +8,44 @@ import (
 )
 
 func (s *Sql) ParseLine(tableName *string, cols *[]Column) (error, bool) {
-	// join all lines
-	sql := strings.Join(s.RawSql, "")
-	// trim ends
-	sql = strings.TrimSpace(sql)
-	// look for "(" => paratheseIdx
-	openParenIdx := strings.Index(sql, "(")
-	if openParenIdx == -1 {
-		return fmt.Errorf("Syntax Error: missing open '('"), false
+	sql := formatSql(s.RawSql)
+	openParenIdx, closeParenIdx, err := determineCorrectFormat(sql)
+	if err != nil {
+		return err, false
 	}
-	// look for ")" for syntax completeness
-	lastParenIdx := strings.LastIndex(sql, ")")
-	if lastParenIdx == -1 || lastParenIdx <= len(sql)-3 {
-		return fmt.Errorf("Syntax Error: missing closing ')'"), false
-	}
-	// look for "create table" or "create table if not exists" => tableIdx
-	tableIdx := strings.Index(sql, "exists")
-	if tableIdx == -1 {
-		tableIdx = strings.Index(sql, "table") + 5
-	} else {
-		tableIdx += 6
-	}
-	// difference between tableIdx and paratheseIdx => get table name
-	tableNameTemp := sql[tableIdx:openParenIdx]
-	tableNameTemp = strings.TrimSpace(tableNameTemp)
-	schemaIdx := strings.Index(tableNameTemp, ".")
-	if schemaIdx > -1 {
-		tableNameTemp = tableNameTemp[schemaIdx+1:]
-	}
-	*tableName = tableNameTemp
-	// find next "," => parse sytax validity; get column name, type and other attributes
-	startIdx := 0
-	primaryKeyStr := ""
-	columnStr := sql[openParenIdx+1:]
-	columns := []Column{}
-	foundEnd := false
+	*tableName = determineTableName(sql[:openParenIdx])
+	colRows := breakCols(sql[openParenIdx+1 : closeParenIdx])
+
+	primaryKeys := []string{}
 	foundNull := false
-	for {
-		if foundEnd {
-			break
-		}
-		foundColumn := true
-		commaIdx := strings.Index(columnStr[startIdx:], ",")
-		if commaIdx == -1 {
-			endCheck := strings.LastIndex(columnStr[startIdx:], ")")
-			strLen := len(columnStr[startIdx:])
-			if endCheck == strLen-1 {
-				// this is to test ')'
-				foundEnd = true
-				commaIdx = endCheck
-			} else if endCheck == strLen-2 {
-				// this is to test '))'
-				foundEnd = true
-				commaIdx = endCheck // - 1
-			} else {
-				foundEnd = true
-			}
-		}
-		commaIdx += startIdx
-		// look for primary key phrase for postgres and mysql equivalent
-		if strings.Index(columnStr[startIdx:commaIdx], "primary key(") > -1 { // for postgres one-liner of setting primary key
-			// postgres
-			if !foundEnd {
-				commaIdx++
-			}
-			primaryKeyStr = columnStr[startIdx:commaIdx]
-			startIdx = commaIdx + 1
+	columns := []Column{}
+
+	for _, c := range colRows {
+		colStr := strings.TrimSpace(c)
+		if strings.Index(colStr, "primary") == 0 {
+			primaryKeys = determinePrimaryKeyNames(c)
 			continue
 		}
-		if len(columnStr[startIdx:commaIdx]) < 4 {
-			// if have a "();" or "()" or ");" then break
-			break
+		if strings.Index(colStr, "key ") == 0 {
+			fmt.Println("key: ignore")
+			continue
 		}
-		colStr := strings.TrimSpace(columnStr[startIdx:commaIdx])
 		column := Column{}
 		if errParse := ParseColumn(colStr, &column); errParse != nil {
 			fmt.Printf("skipping column: %s - %s\n", colStr, errParse)
-			foundColumn = false
+			continue
 		}
-		if foundColumn {
-			columns = append(columns, column)
-			if column.Null && !foundNull {
-				foundNull = true
-			}
-		}
-		startIdx = commaIdx + 1
-		if foundEnd {
-			break
+		columns = append(columns, column)
+		if column.Null && !foundNull {
+			foundNull = true
 		}
 	}
-	// handle primary keys if needed
-	if len(primaryKeyStr) > 0 {
-		primaryParamStart := strings.Index(primaryKeyStr, "(") + 1
-		primaryParamEnd := strings.Index(primaryKeyStr, ")")
-		primaryList := primaryKeyStr[primaryParamStart:primaryParamEnd]
-		splitList := strings.Split(primaryList, ",")
-		for _, key := range splitList {
+	if len(primaryKeys) > 0 {
+		for _, key := range primaryKeys {
 			for i, column := range columns {
 				if key == column.ColumnName.RawName {
 					columns[i].PrimaryKey = true
+					break
 				}
 			}
 		}
@@ -277,5 +216,86 @@ func SplitChar(strChar string) (length int64, err error) {
 	}
 	lengthStr := strChar[paranOpenIdx+1 : paranCloseIdx]
 	length, err = strconv.ParseInt(lengthStr, 10, 64)
+	return
+}
+
+func formatSql(sqlLines []string) string {
+	// join all lines
+	sql := strings.Join(sqlLines, "")
+	// trim ends
+	sql = strings.TrimSpace(sql)
+	// lowercase
+	sql = strings.ToLower(sql)
+	// remove (`)s
+	sql = strings.ReplaceAll(sql, "`", "")
+	return sql
+}
+
+func determineCorrectFormat(sql string) (openIdx, closeIdx int, err error) {
+	// look for "(" => paratheseIdx
+	openIdx = strings.Index(sql, "(")
+	if openIdx == -1 {
+		err = fmt.Errorf("Syntax Error: missing open '('")
+		return
+	}
+	// get the position of the last ","
+	lastComma := strings.LastIndex(sql, ",")
+	// look for ")" for syntax completeness
+	closeIdx = strings.LastIndex(sql, ")")
+	if closeIdx == -1 || closeIdx < lastComma {
+		err = fmt.Errorf("Syntax Error: missing closing ')'")
+	}
+	return
+}
+
+func determineTableName(sql string) string {
+	// look for "create table" or "create table if not exists" => tableIdx
+	tableIdx := strings.Index(sql, "exists")
+	if tableIdx == -1 {
+		tableIdx = strings.Index(sql, "table") + 5
+	} else {
+		tableIdx += 6
+	}
+	// difference between tableIdx and paratheseIdx => get table name
+	tableNameTemp := sql[tableIdx:]
+	tableNameTemp = strings.TrimSpace(tableNameTemp)
+	schemaIdx := strings.Index(tableNameTemp, ".")
+	if schemaIdx > -1 {
+		tableNameTemp = tableNameTemp[schemaIdx+1:]
+	}
+	return tableNameTemp
+}
+
+func breakCols(sql string) (cols []string) {
+	colsTemp := strings.Split(sql, ",")
+	includeNext := false
+	lastIndex := -1
+	for _, c := range colsTemp {
+		if includeNext {
+			cols[lastIndex] = fmt.Sprintf("%s,%s", cols[lastIndex], c)
+			includeNext = false
+			continue
+		}
+		if strings.Contains(c, "(") && !strings.Contains(c, ")") {
+			includeNext = true
+		}
+		lastIndex++
+		cols = append(cols, strings.TrimSpace(c))
+	}
+	return
+}
+
+func determinePrimaryKeyNames(sql string) (keyNames []string) {
+	i := strings.Index(sql, "(")
+	if i >= 0 {
+		j := strings.Index(sql, ")")
+		if j >= 0 {
+			keyStr := sql[i+1 : j]
+			splitList := strings.Split(keyStr, ",")
+			for _, key := range splitList {
+				keyNames = append(keyNames, strings.TrimSpace(key))
+			}
+		}
+	}
 	return
 }

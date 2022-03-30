@@ -23,6 +23,7 @@ func TestName_NameConverter(t *testing.T) {
 				Lower:      "user",
 				AllLower:   "user",
 				Abbr:       "use",
+				Upper:      "USER",
 			},
 		},
 		{
@@ -37,6 +38,7 @@ func TestName_NameConverter(t *testing.T) {
 				Lower:      "api_user",
 				AllLower:   "apiuser",
 				Abbr:       "api",
+				Upper:      "APIUSER",
 			},
 		},
 		{
@@ -51,6 +53,7 @@ func TestName_NameConverter(t *testing.T) {
 				Lower:      "_api_user_",
 				AllLower:   "apiuser",
 				Abbr:       "_ap",
+				Upper:      "APIUSER",
 			},
 		},
 	}
