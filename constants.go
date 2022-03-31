@@ -8,8 +8,9 @@ const (
 	MYSQLLOWER      = "mysql"
 	SQLITE3LOWER    = "sqlite"
 
-	MODEL_INCLUDE_NULL = "\n\t\"gopkg.in/guregu/null.v3\""
-	MODEL_COLUMN       = "\t\t%s\t%s\t`db:\"%s\" json:\"%s\" gorm:\"column:%s\"`"
+	MODEL_INCLUDE_NULL   = "\n\t\"gopkg.in/guregu/null.v3\""
+	MODEL_COLUMN_W_GORM  = "\t\t%s\t%s\t`db:\"%s\" json:\"%s\" gorm:\"column:%s\"`"
+	MODEL_COLUMN_WO_GORM = "\t\t%s\t%s\t`db:\"%s\" json:\"%s\"`"
 
 	HANDLER_PRIMARY_INT = `	%sStr := c.Param("%s")
 	%s, err := strconv.ParseInt(%sStr, 10, 64)

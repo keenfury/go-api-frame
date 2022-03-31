@@ -28,7 +28,10 @@ func (ep *EndPoint) BuildTemplateParts() {
 func (ep *EndPoint) BuildModelTemplate() {
 	cArray := []string{}
 	for _, c := range ep.Columns {
-		cArray = append(cArray, fmt.Sprintf(MODEL_COLUMN, c.ColumnName.Camel, c.GoType, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower))
+		cArray = append(cArray, fmt.Sprintf(MODEL_COLUMN_WO_GORM, c.ColumnName.Camel, c.GoType, c.ColumnName.Lower, c.ColumnName.Camel))
+		if ep.ProjectFile.UseORM {
+			cArray = append(cArray, fmt.Sprintf(MODEL_COLUMN_W_GORM, c.ColumnName.Camel, c.GoType, c.ColumnName.Lower, c.ColumnName.Camel, c.ColumnName.Lower))
+		}
 	}
 	ep.ModelRows = strings.Join(cArray, "\n")
 	if ep.HaveNullColumns {
