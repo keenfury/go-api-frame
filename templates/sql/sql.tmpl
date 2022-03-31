@@ -20,9 +20,9 @@ func InitSQL() *SQL{{.Camel}} {
 
 func (d *SQL{{.Camel}}) Read({{.Abbr}} *{{.Camel}}) error {
 	sqlGet := {{.DataTablePrefix}}`
-		select
+		SELECT
 			{{.SqlGetColumns}}
-		from {{.DataTable}} where {{.SqlTableKeyKeys}}`{{.DataTablePostfix}}
+		FROM {{.DataTable}} WHERE {{.SqlTableKeyKeys}}`{{.DataTablePostfix}}
 	if errDB := d.DB.Get({{.Abbr}}, sqlGet, {{.SqlTableKeyValues}}); errDB != nil {
 		return ae.DBError("{{.Camel}} Get: unable to get record.", errDB)
 	}
@@ -31,9 +31,9 @@ func (d *SQL{{.Camel}}) Read({{.Abbr}} *{{.Camel}}) error {
 
 func (d *SQL{{.Camel}}) ReadAll({{.Abbr}} *[]{{.Camel}}) error {
 	sqlList := {{.DataTablePrefix}}`
-		select
+		SELECT
 			{{.SqlGetColumns}}
-		from {{.DataTable}} order by {{.SqlTableKeyListOrder}}`{{.DataTablePostfix}}
+		FROM {{.DataTable}} ORDER BY {{.SqlTableKeyListOrder}}`{{.DataTablePostfix}}
 	if errDB := d.DB.Select({{.Abbr}}, sqlList); errDB != nil {
 		return ae.DBError("{{.Camel}} List: unable to select records.", errDB)
 	}
@@ -42,9 +42,9 @@ func (d *SQL{{.Camel}}) ReadAll({{.Abbr}} *[]{{.Camel}}) error {
 
 func (d *SQL{{.Camel}}) Create({{.Abbr}} *{{.Camel}}) error {
 	sqlPost := {{.DataTablePrefix}}`
-		insert into {{.DataTable}} (
+		INSERT INTO {{.DataTable}} (
 			{{.SqlPostColumns}}
-		) values (
+		) VALUES (
 			{{.SqlPostColumnsNamed}}
 		){{.SqlPostReturning}}`{{.DataTablePostfix}}
 	rows, errDB := d.DB.NamedQuery(sqlPost, {{.Abbr}})
@@ -58,9 +58,9 @@ func (d *SQL{{.Camel}}) Create({{.Abbr}} *{{.Camel}}) error {
 
 func (d *SQL{{.Camel}}) Update({{.Abbr}} *{{.Camel}}) error {
 	sqlPatch := {{.DataTablePrefix}}`
-		update {{.DataTable}} set
+		UPDATE {{.DataTable}} SET
 			{{.SqlPatchColumns}}
-		where {{.SqlPatchWhere}}`{{.DataTablePostfix}}
+		WHERE {{.SqlPatchWhere}}`{{.DataTablePostfix}}
 	if _, errDB := d.DB.NamedExec(sqlPatch, {{.Abbr}}); errDB != nil {
 		return ae.DBError("{{.Camel}} Patch: unable to update record.", errDB)
 	}
@@ -69,7 +69,7 @@ func (d *SQL{{.Camel}}) Update({{.Abbr}} *{{.Camel}}) error {
 
 func (d *SQL{{.Camel}}) Delete({{.Abbr}} *{{.Camel}}) error {
 	sqlDelete := {{.DataTablePrefix}}`
-		delete from {{.DataTable}} where {{.SqlTableKeyKeys}}`{{.DataTablePostfix}}
+		DELETE FROM {{.DataTable}} WHERE {{.SqlTableKeyKeys}}`{{.DataTablePostfix}}
 	if _, errDB := d.DB.Exec(sqlDelete, {{.SqlTableKeyValues}}); errDB != nil {
 		return ae.DBError("{{.Camel}} Delete: unable to delete record.", errDB)
 	}
