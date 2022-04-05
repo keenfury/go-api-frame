@@ -616,15 +616,19 @@ func (ep *EndPoint) BuildAPIHooks() {
 		for _, s := range split {
 			if string(s[0]) == "s" {
 				configLines = append(configLines, "StorageSQL = true")
+				configLines = append(configLines, "DBUser = getEnvOrDefault(\"{{.Name.Upper}}_DB_USER\",\"\")")
+				configLines = append(configLines, "DBPass = getEnvOrDefault(\"{{.Name.Upper}}_DB_PASS\", \"\")")
+				configLines = append(configLines, "DBDB = getEnvOrDefault(\"{{.Name.Upper}}_DB_DB\", \"\")")
+				configLines = append(configLines, "DBHost = getEnvOrDefault(\"{{.Name.Upper}}_HOST\", \"\")")
 			}
 			if string(s[0]) == "f" {
 				configLines = append(configLines, "StorageFile = true")
-				configLines = append(configLines, "SqlitePath = getEnvOrDefault({{.Name.Upper}}_SQLITE_PATH, \"/tmp/{{.Name.Lower}}.db\")")
+				configLines = append(configLines, "SqlitePath = getEnvOrDefault(\"{{.Name.Upper}}_SQLITE_PATH\", \"/tmp/{{.Name.Lower}}.db\")")
 			}
 			if string(s[0]) == "m" {
 				configLines = append(configLines, "StorageMongo = true")
-				configLines = append(configLines, "MongoHost = getEnvOrDefault({{.Name.Upper}}_MONGO_HOST, \"localhost\"")
-				configLines = append(configLines, "MongoPort = getEnvOrDefault({{.Name.Upper}}_MONGO_PORT, \"27017\"")
+				configLines = append(configLines, "MongoHost = getEnvOrDefault(\"{{.Name.Upper}}_MONGO_HOST\", \"localhost\"")
+				configLines = append(configLines, "MongoPort = getEnvOrDefault(\"{{.Name.Upper}}_MONGO_PORT\", \"27017\"")
 			}
 		}
 		configLine := strings.Join(configLines, "\n\t")
