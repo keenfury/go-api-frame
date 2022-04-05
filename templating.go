@@ -439,6 +439,7 @@ func (ep *EndPoint) BuildGrpc() {
 	lines = append(lines, fmt.Sprintf("\trpc Get%s(IDIn) returns (%sResponse);", ep.Name.Camel, ep.Name.Camel))
 	lines = append(lines, fmt.Sprintf("\trpc List%s(%s) returns (%sRepeatResponse);", ep.Name.Camel, ep.Name.Camel, ep.Name.Camel))
 	lines = append(lines, fmt.Sprintf("\trpc Post%s(%s) returns (%sResponse);", ep.Name.Camel, ep.Name.Camel, ep.Name.Camel))
+	lines = append(lines, fmt.Sprintf("\trpc Put%s(%s) returns (Result);", ep.Name.Camel, ep.Name.Camel))
 	lines = append(lines, fmt.Sprintf("\trpc Patch%s(%s) returns (Result);", ep.Name.Camel, ep.Name.Camel))
 	lines = append(lines, fmt.Sprintf("\trpc Delete%s(IDIn) returns (Result);", ep.Name.Camel))
 	lines = append(lines, "}")

@@ -75,6 +75,20 @@ func (a *{{.Camel}}Grpc) Post{{.Camel}}(ctx context.Context, in *p.{{.Camel}}) (
 	return response, nil
 }
 
+func (a *{{.Camel}}Grpc) Put{{.Camel}}(ctx context.Context, in *p.{{.Camel}}) (*p.Result, error) {
+	response := &p.Result{Success: false}
+	{{.Abbr}}, err := translateIn(in)
+	if err != nil {
+		return response, err
+	}
+	if err := a.manager{{.Camel}}.Put({{.Abbr}}); err != nil {
+		response.Error = err.Error()
+		return response, err
+	}
+	response.Success = true
+	return response, nil
+}
+
 func (a *{{.Camel}}Grpc) Patch{{.Camel}}(ctx context.Context, in *p.{{.Camel}}) (*p.Result, error) {
 	response := &p.Result{Success: false}
 	patchByte, err := json.Marshal(in)
