@@ -194,7 +194,11 @@ func (ep *EndPoint) BuildManagerTemplate() {
 		// patch rows
 		if c.GoType == "null.String" {
 			if !c.PrimaryKey {
-				patchRow += fmt.Sprintf(MANAGER_PATCH_STRING_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
+				patchLenCheck := ""
+				if c.Length > 0 {
+					patchLenCheck = fmt.Sprintf(MANAGER_PATCH_VARCHAR_LEN, ep.Abbr, c.ColumnName.Camel, ep.Abbr, c.ColumnName.Camel, c.Length, c.ColumnName.Camel, c.Length)
+				}
+				patchRow += fmt.Sprintf(MANAGER_PATCH_STRING_NULL_ASSIGN, c.ColumnName.Camel, c.ColumnName.LowerCamel, c.ColumnName.Camel, c.ColumnName.Camel, c.ColumnName.Camel, patchLenCheck, ep.Abbr, c.ColumnName.Camel, c.ColumnName.LowerCamel)
 			}
 		}
 		if c.GoType == "int" || c.GoType == "null.Int" {

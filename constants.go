@@ -91,10 +91,10 @@ const (
 	`  // ColCamel, ColLowerCamel, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
 	MANAGER_PATCH_STRING_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(string)
-	if ok%s {
+	if ok%s {%s
 		%s.%s.Scan(%s)
 	}
-	`  // ColCamel, ColCamelLower, ColCamel, ColCamel, ColCamel, Abbr, ColCamel, ColCamelLower
+	`  // ColCamel, ColCamelLower, ColCamel, ColCamel, ColCamel, StringLenCheck, Abbr, ColCamel, ColCamelLower
 	MANAGER_PATCH_BOOL_NULL_ASSIGN = `// %s
 	%s, ok%s := jParsed.Search("%s").Data().(bool)
 	if ok%s {
@@ -120,6 +120,10 @@ const (
 		%s.%s.Scan(%sTime)
 	}
 	`  // ColCamel, ColLowerCamel, ColCamel, ColCamel, ColCamel, ColLowerCamel, ColLowerCamel, ColCamel, Abbr, ColCamel, ColLowerCamel
+	MANAGER_PATCH_VARCHAR_LEN = `
+			if %s.%s.Valid && len(%s.%s.ValueOrZero()) > %d {
+				return ae.StringLengthError("%s", %d)
+		}`  // Abbr, ColumnCamel, Abbr, ColumnCamel, ColumnLength, ColumnCamel, ColumnLength
 	DATA_LAST_ID = `var lastId int64
 	if rows.Next() {
 		rows.Scan(&lastId)
