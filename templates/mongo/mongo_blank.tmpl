@@ -1,4 +1,4 @@
-package {{.Abbr}}
+package {{.AllLower}}
 
 import (
 	"context"
@@ -20,19 +20,19 @@ func InitMongo() *Mongo{{.Camel}} {
 	return &Mongo{{.Camel}}{DB: db}
 }
 
-func (d *Mongo{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) Read({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *Mongo{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) ReadAll({{.Abbr}} *[]{{.Camel}}) error {
 	return nil
 }
 
-func (d *Mongo{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) Create({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *Mongo{{.Camel}}) Put({{.Abbr}} *{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) Update({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 

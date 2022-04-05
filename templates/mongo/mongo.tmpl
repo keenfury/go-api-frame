@@ -1,4 +1,4 @@
-package {{.Abbr}}
+package {{.AllLower}}
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func InitMongo() *Mongo{{.Camel}} {
 	return &Mongo{{.Camel}}{DB: db}
 }
 
-func (d *Mongo{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) Read({{.Abbr}} *{{.Camel}}) error {
 	collection := d.DB.Database("{{.Lower}}").Collection("{{.Abbr}}")
 	filter := bson.M{"id": {{.Abbr}}.Id}
 	err := collection.FindOne(context.TODO(), filter).Decode({{.Abbr}})
@@ -30,7 +30,7 @@ func (d *Mongo{{.Camel}}) Get({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *Mongo{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) ReadAll({{.Abbr}} *[]{{.Camel}}) error {
 	collection := d.DB.Database("{{.Lower}}").Collection("{{.Abbr}}")
 	filter := bson.D{}
 	cur, err := collection.Find(context.TODO(), filter)
@@ -49,7 +49,7 @@ func (d *Mongo{{.Camel}}) List({{.Abbr}} *[]{{.Camel}}) error {
 	return nil
 }
 
-func (d *Mongo{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) Create({{.Abbr}} *{{.Camel}}) error {
 	collection := d.DB.Database("{{.Lower}}").Collection("{{.Abbr}}")
 	_, err := collection.InsertOne(context.TODO(), {{.Abbr}})
 	if err != nil {
@@ -58,7 +58,7 @@ func (d *Mongo{{.Camel}}) Post({{.Abbr}} *{{.Camel}}) error {
 	return nil
 }
 
-func (d *Mongo{{.Camel}}) Put({{.Abbr}} *{{.Camel}}) error {
+func (d *Mongo{{.Camel}}) Update({{.Abbr}} *{{.Camel}}) error {
 	obj, err := bson.Marshal({{.Abbr}})
 	if err != nil {
 		return ae.GeneralError("{{.Camel}} Put: unable to decode object.", err)

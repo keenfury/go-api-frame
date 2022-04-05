@@ -47,7 +47,7 @@ func (ep *EndPoint) BuildModelTemplate() {
 			initStorage = append(initStorage, fmt.Sprintf("\tif config.StorageFile {\n\t\treturn &File%s{}\n\t}", ep.Camel))
 		}
 		if string(s[0]) == "m" {
-			initStorage = append(initStorage, fmt.Sprintf("\tif config.StorageMongo {\n\t\treturn &Mongo%s{}\n\t}", ep.Camel))
+			initStorage = append(initStorage, fmt.Sprintf("\tif config.StorageMongo {\n\t\treturn InitMongo()\n\t}"))
 		}
 	}
 	ep.InitStorage = strings.Join(initStorage, "\n")
