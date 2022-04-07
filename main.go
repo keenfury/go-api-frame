@@ -119,4 +119,5 @@ func (n *Name) NameConverter() {
 	n.Lower = lower
 	n.AllLower = strings.ToLower(camel)
 	n.Upper = strings.ToUpper(camel)
+	n.EnvVar = strings.ToUpper(n.RawName)
 }

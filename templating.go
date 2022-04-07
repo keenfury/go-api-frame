@@ -462,7 +462,7 @@ func (ep *EndPoint) BuildGrpc() {
 }
 
 func (ep *EndPoint) BuildAPIHooks() {
-	// hook into server file
+	// hook into rest main
 	apiFile := fmt.Sprintf("%s/cmd/rest/main.go", ep.ProjectFile.FullPath)
 	if _, err := os.Stat(apiFile); os.IsNotExist(err) {
 		fmt.Printf("%s is missing unable to write in hooks\n", apiFile)
@@ -498,6 +498,21 @@ func (ep *EndPoint) BuildAPIHooks() {
 			errServerCmd := execServer.Run()
 			if errServerCmd != nil {
 				fmt.Printf("%s: error in replace for main [%s]\n", apiFile, errServerCmd)
+			}
+		}
+		if ep.SQLProvider != "" {
+			// handling sql add migration
+			migRestMain := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace migration once text - do not remove ---/%s/g' %s`, MIGRATION_CALL, apiFile)
+			execRestMain := exec.Command("bash", "-c", migRestMain)
+			errExecRestMain := execRestMain.Run()
+			if errExecRestMain != nil {
+				fmt.Printf("%s: error in replace migration main [%s]\n", apiFile, errExecRestMain)
+			}
+			migRestHeader := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace migration header once text - do not remove ---/%s/g' %s`, fmt.Sprintf(`mig "%s\/tools\/migration\/src"`, ep.ProjectPathEncoded), apiFile)
+			execRestHeader := exec.Command("bash", "-c", migRestHeader)
+			errExecRestHeader := execRestHeader.Run()
+			if errExecRestHeader != nil {
+				fmt.Printf("%s: error in replace migration main [%s]\n", apiFile, errExecRestMain)
 			}
 		}
 	}
@@ -604,6 +619,27 @@ func (ep *EndPoint) BuildAPIHooks() {
 				fmt.Printf("%s: error in replace for grpc [%s]\n", grpcFile, errGrpcCmd)
 			}
 		}
+		if ep.SQLProvider != "" {
+			// handling sql add migration
+			migGrpcMain := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace migration once text - do not remove ---/%s/g' %s`, MIGRATION_CALL, grpcFile)
+			execGrpcMain := exec.Command("bash", "-c", migGrpcMain)
+			errExecGrpcMain := execGrpcMain.Run()
+			if errExecGrpcMain != nil {
+				fmt.Printf("%s: error in replace migration main [%s]\n", grpcFile, errExecGrpcMain)
+			}
+			migGrpcHeader := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace migration header once text - do not remove ---/%s/g' %s`, fmt.Sprintf(`mig "%s\/tools\/migration\/src"`, ep.ProjectPathEncoded), grpcFile)
+			execGrpcHeader := exec.Command("bash", "-c", migGrpcHeader)
+			errExecGrpcHeader := execGrpcHeader.Run()
+			if errExecGrpcHeader != nil {
+				fmt.Printf("%s: error in replace migration main [%s]\n", grpcFile, errExecGrpcHeader)
+			}
+			migGrpcHeaderOs := fmt.Sprintf(`perl -pi -e 's/\/\/ --- replace migration header os once text - do not remove ---/%s/g' %s`, MIGRATION_GRPC_HEADER_ONCE, grpcFile)
+			execGrpcHeaderOs := exec.Command("bash", "-c", migGrpcHeaderOs)
+			errExecGrpcHeaderOs := execGrpcHeaderOs.Run()
+			if errExecGrpcHeaderOs != nil {
+				fmt.Printf("%s: error in replace migration main [%s]\n", grpcFile, errExecGrpcHeaderOs)
+			}
+		}
 	}
 	// hook into config.go
 	configFile := fmt.Sprintf("%s/config/config.go", ep.ProjectFile.FullPath)
@@ -616,10 +652,10 @@ func (ep *EndPoint) BuildAPIHooks() {
 		for _, s := range split {
 			if string(s[0]) == "s" {
 				configLines = append(configLines, "StorageSQL = true")
-				configLines = append(configLines, "DBUser = getEnvOrDefault(\"{{.Name.Upper}}_DB_USER\",\"\")")
-				configLines = append(configLines, "DBPass = getEnvOrDefault(\"{{.Name.Upper}}_DB_PASS\", \"\")")
-				configLines = append(configLines, "DBDB = getEnvOrDefault(\"{{.Name.Upper}}_DB_DB\", \"\")")
-				configLines = append(configLines, "DBHost = getEnvOrDefault(\"{{.Name.Upper}}_HOST\", \"\")")
+				configLines = append(configLines, "DBUser = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_USER\",\"\")")
+				configLines = append(configLines, "DBPass = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_PASS\", \"\")")
+				configLines = append(configLines, "DBDB = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_DB\", \"\")")
+				configLines = append(configLines, "DBHost = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_HOST\", \"\")")
 			}
 			if string(s[0]) == "f" {
 				configLines = append(configLines, "StorageFile = true")

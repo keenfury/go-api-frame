@@ -210,4 +210,112 @@ func Setup{{.Camel}}(eg *echo.Group) {
 	h{{.Name.Abbr}} := {{.Name.Abbr}}.New{{.Name.Camel}}Grpc(m{{.Name.Abbr}})
 	pb.Register{{.Name.Camel}}ServiceServer(s, h{{.Name.Abbr}})
 	\/\/ --- replace grpc text - do not remove ---`
+
+	MIGRATION_VERIFY_MYSQL = `connectionStr := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, "mysql")
+	if dbPass == "" {
+		connectionStr = fmt.Sprintf("%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbHost, "mysql")
+	}
+	db, errOpen := sqlx.Open("mysql", connectionStr)
+	if errOpen != nil {
+		return fmt.Errorf("Unable to open DB for init: %s", errOpen)
+	}
+	defer db.Close()
+
+	sqlDatabase := fmt.Sprintf("select exists (select schema_name from information_schema.schemata where schema_name = '%s')", expectedDB)
+	var exists bool
+	errGet := db.Get(&exists, sqlDatabase)
+	if errGet != nil {
+		return fmt.Errorf("Error Get schema: %s", errGet)
+	}
+	if !exists {
+		sqlCreateDB := fmt.Sprintf("CREATE DATABASE %s", expectedDB)
+		_, err := db.Exec(sqlCreateDB)
+		if err != nil {
+			return fmt.Errorf("Error in creating DB: %s with error: %s", expectedDB, err)
+		}
+	}
+	sqlCreateUser := fmt.Sprintf("CREATE USER IF NOT EXISTS '%s' IDENTIFIED BY '%s'", dbUser, dbPass)
+	_, errCreateUser := db.Exec(sqlCreateUser)
+	if errCreateUser != nil {
+		return fmt.Errorf("Error in creating user: %s", errCreateUser)
+	}
+	sqlGrantUser := fmt.Sprintf("GRANT ALL ON %s.* TO '%s'@'%%'", expectedDB, dbUser)
+	_, errGrantUser := db.Exec(sqlGrantUser)
+	if errGrantUser != nil {
+		return fmt.Errorf("Error in grant user: %s", errGrantUser)
+	}
+	return nil`
+
+	MIGRATION_CONNECTION_MYSQL = `connectionStr := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, "mysql")
+	if dbPass == "" {
+		connectionStr = fmt.Sprintf("%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbHost, "mysql")
+	}
+	db, errOpen := sqlx.Open("mysql", connectionStr)
+	if errOpen != nil {
+		fmt.Printf("Unable to open DB for migrations: %s\n", errOpen)
+		os.Exit(1)
+	}`
+
+	MIGRATION_VERIFY_POSTGRES = `connectionStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", dbUser, dbPass, "postgres", dbHost)
+	if dbPass == "" {
+		connectionStr = fmt.Sprintf("user=%s dbname=%s host=%s sslmode=disable", dbUser, "postgres", dbHost)
+	}
+	db, errOpen := sqlx.Open("postgres", connectionStr)
+	if errOpen != nil {
+		return fmt.Errorf("Unable to open DB for init: %s", errOpen)
+	}
+	defer db.Close()
+
+	sqlDatabase := fmt.Sprintf("select exists(select datname from pg_catalog.pg_database where datname = '%s')", expectedDB)
+	var exists bool
+	errGet := db.Get(&exists, sqlDatabase)
+	if errGet != nil {
+		return fmt.Errorf("Error Get schema: %s", errGet)
+	}
+	if !exists {
+		sqlCreateDB := fmt.Sprintf("CREATE DATABASE %s", expectedDB)
+		_, err := db.Exec(sqlCreateDB)
+		if err != nil {
+			return fmt.Errorf("Error in creating DB: %s with error: %s", expectedDB, err)
+		}
+	}
+	sqlCreateUser := fmt.Sprintf("CREATE USER IF NOT EXISTS %s WITH ENCRYPTED PASSWORD '%s", dbUser, dbPass)
+	_, errCreateUser := db.Exec(sqlCreateUser)
+	if errCreateUser != nil {
+		return fmt.Errorf("Error in creating user: %s", errCreateUser)
+	}
+	sqlGrantUser := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", expectedDB, dbUser)
+	_, errGrantUser := db.Exec(sqlGrantUser)
+	if errGrantUser != nil {
+		return fmt.Errorf("Error in grant user: %s", errGrantUser)
+	}
+	return nil`
+
+	MIGRATION_CONNECTION_POSTGRES = `connectionStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", dbUser, dbPass, dbDB, dbHost)
+	if dbPass == "" {
+		connectionStr = fmt.Sprintf("user=%s dbname=%s host=%s sslmode=disable", dbUser, dbDB, dbHost)
+	}
+	db, errOpen := sqlx.Open("postgres", connectionStr)
+	if errOpen != nil {
+		fmt.Printf("Unable to open DB for migrations: %s\n", errOpen)
+		os.Exit(1)
+	}`
+
+	MIGRATION_VERIFY_SQLITE = `return nil`
+
+	MIGRATION_CALL = `if config.UseMigration {
+		err := os.MkdirAll(config.MigrationPath, 0744)
+		if err != nil {
+			fmt.Printf("Unable to make scripts\/migrations directory structure: %s\\n", err)
+		}
+
+		errVerify := mig.VerifyDBInit(config.DBDB, config.DBHost, config.DBUser, config.DBPass)
+		if errVerify != nil {
+			panic(errVerify)
+		}
+		mig.RunMigration(config.MigrationPath, config.DBHost, config.DBUser, config.DBPass, config.DBDB)
+	}
+`
+	MIGRATION_GRPC_HEADER_ONCE = `
+	"os"`
 )

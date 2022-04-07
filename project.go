@@ -58,6 +58,8 @@ func (p *Project) CreateProjectFile() bool {
 	p.ProjectFile.Message = "This is used for the api frame program for convenience"
 	p.ProjectFile.FullPath = pwd
 	p.ProjectFile.AppName = path.Base(pwd)
+	p.ProjectFile.Name.RawName = p.ProjectFile.AppName
+	p.ProjectFile.Name.NameConverter()
 	// ask for subdir
 	fmt.Print("Which sub folder to save endpoint files (v1, routes, etc)? ")
 	p.ProjectFile.SubDir = ParseInput(p.Reader)
@@ -158,16 +160,21 @@ func (p *Project) ProcessTemplates() {
 					ep.SQLProvider = MYSQL
 					ep.SQLProviderLower = MYSQLLOWER
 					ep.SQLProviderConnection = fmt.Sprintf("%sConnection", MYSQL)
+					ep.MigrationVerify = MIGRATION_VERIFY_MYSQL
+					ep.MigrationConnection = MIGRATION_CONNECTION_MYSQL
 					storageFiles = append(storageFiles, "mysql")
 				case "p":
 					ep.SQLProvider = POSTGRESQL
 					ep.SQLProviderLower = POSTGRESQLLOWER
 					ep.SQLProviderConnection = fmt.Sprintf("%sConnection", POSTGRESQL)
+					ep.MigrationVerify = MIGRATION_VERIFY_POSTGRES
+					ep.MigrationConnection = MIGRATION_CONNECTION_POSTGRES
 					storageFiles = append(storageFiles, "psql")
 				case "s":
 					ep.SQLProvider = SQLITE3
 					ep.SQLProviderLower = SQLITE3LOWER
 					ep.SQLProviderConnection = fmt.Sprintf("%sConnection", SQLITE3)
+					ep.MigrationVerify = MIGRATION_VERIFY_SQLITE
 					storageFiles = append(storageFiles, "sqlite")
 				}
 			case "f":
@@ -233,12 +240,65 @@ func (p *Project) ProcessTemplates() {
 			newFileName := fmt.Sprintf("%s/%s.go", storageSavePath, tmpl)
 			// don't over-write if already there
 			if _, err := os.Stat(newFileName); !os.IsNotExist(err) {
-				fmt.Printf("already exists: %s, skipping\n", newFileName)
+				// fmt.Printf("already exists: %s, skipping\n", newFileName)
 				continue
 			}
 			file, err := os.Create(newFileName)
 			if err != nil {
 				fmt.Println("File:", tmpl, "was not able to be created", err)
+				fmt.Println("Exiting...")
+				return
+			}
+			err = t.Execute(file, ep)
+			if err != nil {
+				fmt.Println("Execution of template:", err)
+			}
+		}
+		// save migration
+		migPath := fmt.Sprintf("%s/tools/migration", p.ProjectFile.FullPath)
+		if _, err := os.Stat(migPath); os.IsNotExist(err) {
+			errMk := os.MkdirAll(migPath, 0755)
+			if errMk != nil {
+				fmt.Printf("Unable to make tools/migration path: %s", errMk)
+				return
+			}
+			// migration/main.go
+			tmplPath := fmt.Sprintf("%s/tools/migration_main.tmpl", templatePath)
+			t, errParse := template.ParseFiles(tmplPath)
+			if errParse != nil {
+				fmt.Printf("Template migration/main could not parse file: %s; %s", tmplPath, errParse)
+				fmt.Println("Exiting...")
+				return
+			}
+			newFileName := fmt.Sprintf("%s/main.go", migPath)
+			file, err := os.Create(newFileName)
+			if err != nil {
+				fmt.Println("File: migration main was not able to be created", err)
+				fmt.Println("Exiting...")
+				return
+			}
+			err = t.Execute(file, ep)
+			if err != nil {
+				fmt.Println("Execution of template:", err)
+			}
+			// migration/src/main.go
+			tmplPath = fmt.Sprintf("%s/tools/migration.tmpl", templatePath)
+			t, errParse = template.ParseFiles(tmplPath)
+			if errParse != nil {
+				fmt.Printf("Template src/migration could not parse file: %s; %s", tmplPath, errParse)
+				fmt.Println("Exiting...")
+				return
+			}
+			migPath = migPath + "/src"
+			errMk = os.MkdirAll(migPath, 0755)
+			if errMk != nil {
+				fmt.Printf("Unable to make tools/migration/src path: %s", errMk)
+				return
+			}
+			newFileName = fmt.Sprintf("%s/migration.go", migPath)
+			file, err = os.Create(newFileName)
+			if err != nil {
+				fmt.Println("File: migration src was not able to be created", err)
 				fmt.Println("Exiting...")
 				return
 			}
@@ -253,7 +313,7 @@ func (p *Project) ProcessTemplates() {
 func (p *Project) Protoc() {
 	cmdDir := fmt.Sprintf("%s/pkg/proto", p.ProjectFile.FullPath)
 	os.Chdir(cmdDir)
-	cmd := fmt.Sprintf("protoc --go_out=. --go_opt=paths=source_relative    --go-grpc_out=. --go-grpc_opt=paths=source_relative %s.proto", p.ProjectFile.AppName)
+	cmd := fmt.Sprintf("protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative %s.proto", p.ProjectFile.AppName)
 	execProto := exec.Command("bash", "-c", cmd)
 	errProtoCmd := execProto.Run()
 	if errProtoCmd != nil {

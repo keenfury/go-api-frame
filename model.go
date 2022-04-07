@@ -18,6 +18,7 @@ type (
 		Schema               string `json:"schema"`
 		DynamicSchemaPostfix string `json:"dynamic_schema_postfix"`
 		UseORM               bool   `json:"use_orm"`
+		Name
 	}
 
 	Project struct {
@@ -70,6 +71,8 @@ type (
 		SQLProvider            string // optional if using SQL as a storage, either Psql, MySql or Sqlite; this interfaces with sqlx
 		SQLProviderLower       string // optional if using SQL as a storage, either psql, mysql or sqlite; this interfaces with gorm
 		SQLProviderConnection  string // holds the connection string for gorm of the other sql types
+		MigrationVerify        string
+		MigrationConnection    string
 		Name
 		ProjectFile
 	}
@@ -82,6 +85,7 @@ type (
 		Abbr       string
 		AllLower   string
 		Upper      string
+		EnvVar     string
 	}
 
 	Column struct {
