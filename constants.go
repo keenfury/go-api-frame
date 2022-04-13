@@ -16,7 +16,7 @@ const (
 	%s, err := strconv.ParseInt(%sStr, 10, 64)
 	if err != nil {
 		bindErr := ae.ParseError("Invalid param value, not a number")
-		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), false, 0, 0, 0))
+		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), &bindErr))
 	}`  // Lower, Lower, Lower, Lower
 	HANDLER_PRIMARY_STR = `	%s := c.Param("%s")` // Lower, Lower
 	HANDLER_GET_DELETE  = `	%s := &%s{%s}`       // CamelLower, Camel, HandlerArgSet
@@ -211,6 +211,8 @@ func Setup{{.Camel}}(eg *echo.Group) {
 	pb.Register{{.Name.Camel}}ServiceServer(s, h{{.Name.Abbr}})
 	\/\/ --- replace grpc text - do not remove ---`
 
+	MIGRATION_VERIFY_HEADER_MYSQL = `_ "github.com/go-sql-driver/mysql"`
+
 	MIGRATION_VERIFY_MYSQL = `connectionStr := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbPass, dbHost, "mysql")
 	if dbPass == "" {
 		connectionStr = fmt.Sprintf("%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbUser, dbHost, "mysql")
@@ -221,7 +223,7 @@ func Setup{{.Camel}}(eg *echo.Group) {
 	}
 	defer db.Close()
 
-	sqlDatabase := fmt.Sprintf("select exists (select schema_name from information_schema.schemata where schema_name = '%s')", expectedDB)
+	sqlDatabase := fmt.Sprintf("SELECT EXISTS (SELECT schema_name FROM information_schema.schemata WHERE schema_name = '%s')", expectedDB)
 	var exists bool
 	errGet := db.Get(&exists, sqlDatabase)
 	if errGet != nil {
@@ -256,6 +258,8 @@ func Setup{{.Camel}}(eg *echo.Group) {
 		os.Exit(1)
 	}`
 
+	MIGRATION_VERIFY_HEADER_POSTGRES = `_ "github.com/lib/pq"`
+
 	MIGRATION_VERIFY_POSTGRES = `connectionStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", dbUser, dbPass, "postgres", dbHost)
 	if dbPass == "" {
 		connectionStr = fmt.Sprintf("user=%s dbname=%s host=%s sslmode=disable", dbUser, "postgres", dbHost)
@@ -266,7 +270,7 @@ func Setup{{.Camel}}(eg *echo.Group) {
 	}
 	defer db.Close()
 
-	sqlDatabase := fmt.Sprintf("select exists(select datname from pg_catalog.pg_database where datname = '%s')", expectedDB)
+	sqlDatabase := fmt.Sprintf("SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = '%s')", expectedDB)
 	var exists bool
 	errGet := db.Get(&exists, sqlDatabase)
 	if errGet != nil {
@@ -279,15 +283,22 @@ func Setup{{.Camel}}(eg *echo.Group) {
 			return fmt.Errorf("Error in creating DB: %s with error: %s", expectedDB, err)
 		}
 	}
-	sqlCreateUser := fmt.Sprintf("CREATE USER IF NOT EXISTS %s WITH ENCRYPTED PASSWORD '%s", dbUser, dbPass)
-	_, errCreateUser := db.Exec(sqlCreateUser)
-	if errCreateUser != nil {
-		return fmt.Errorf("Error in creating user: %s", errCreateUser)
+	sqlUserExists := fmt.Sprintf("SELECT EXISTS(SELECT rolname FROM pg_roles WHERE rolname = '%s')", dbUser)
+	errUser := db.Get(&exists, sqlUserExists)
+	if errUser != nil {
+		return fmt.Errorf("Error get user: %s", errUser)
 	}
-	sqlGrantUser := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", expectedDB, dbUser)
-	_, errGrantUser := db.Exec(sqlGrantUser)
-	if errGrantUser != nil {
-		return fmt.Errorf("Error in grant user: %s", errGrantUser)
+	if !exists {
+		sqlCreateUser := fmt.Sprintf("CREATE USER IF NOT EXISTS %s WITH ENCRYPTED PASSWORD '%s", dbUser, dbPass)
+		_, errCreateUser := db.Exec(sqlCreateUser)
+		if errCreateUser != nil {
+			return fmt.Errorf("Error in creating user: %s", errCreateUser)
+		}
+		sqlGrantUser := fmt.Sprintf("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", expectedDB, dbUser)
+		_, errGrantUser := db.Exec(sqlGrantUser)
+		if errGrantUser != nil {
+			return fmt.Errorf("Error in grant user: %s", errGrantUser)
+		}
 	}
 	return nil`
 
@@ -301,7 +312,18 @@ func Setup{{.Camel}}(eg *echo.Group) {
 		os.Exit(1)
 	}`
 
+	MIGRATION_VERIFY_HEADER_SQLITE = `_ "github.com/mattn/go-sqlite3"`
+
 	MIGRATION_VERIFY_SQLITE = `return nil`
+
+	MIGRATION_CONNECTION_SQLITE = `connectionStr := fmt.Sprintf("%s?cache=shared&mode=wrc", dbHost)
+	db, err := sqlx.Open("sqlite3", connectionStr)
+	if err != nil {
+		fmt.Println("Could not connect with connection string:", connectionStr)
+		os.Exit(1)
+	}
+	db.SetMaxOpenConns(1)
+	`
 
 	MIGRATION_CALL = `if config.UseMigration {
 		err := os.MkdirAll(config.MigrationPath, 0744)

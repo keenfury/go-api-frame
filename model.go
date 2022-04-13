@@ -73,6 +73,7 @@ type (
 		SQLProviderConnection  string // holds the connection string for gorm of the other sql types
 		MigrationVerify        string
 		MigrationConnection    string
+		MigrationHeader        string
 		Name
 		ProjectFile
 	}

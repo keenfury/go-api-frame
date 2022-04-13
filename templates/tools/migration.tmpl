@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
+	{{.MigrationHeader}}
 	"github.com/jmoiron/sqlx"
 )
 
@@ -80,12 +80,12 @@ func RunMigration(migrationDir, dbHost, dbUser, dbPass, dbDB string) error {
 			// if not, run the sql for that file
 			fileContent, err := os.ReadFile(fmt.Sprintf("%s/%s", migrationDir, file.Name()))
 			if err != nil {
-				fmt.Printf("Unable to read file: %s with error: %s", file.Name(), err)
+				fmt.Printf("Unable to read file: %s with error: %s\n", file.Name(), err)
 				continue
 			}
 			_, errExec := db.Exec(string(fileContent))
 			if errExec != nil {
-				fmt.Printf("Unable to run file query: %s with error: %s", file.Name(), err)
+				fmt.Printf("Unable to run file query: %s with error: %s\n", file.Name(), errExec)
 				continue
 			}
 			migration := Migration{Version: nameParts[0]}

@@ -17,18 +17,24 @@ import (
 This tool will provide a few functionalities for your application:
 
 1 - able to run any sql scripts in the scripts/migrations directory and apply them in chronological order and determine which scripts have already been applied
-2 - able to normalize the name of a file so that your file can be ran by the migration piece effectively
-	this can only be the file name, the application will apply the full path
-3 - able to run in an interactive mode to take text in to save to a file for normalization of name
+
+2 - able to normalize the name of a file so that your file can be ran by the migration process in the chronological order; when using (f) just enter in the name of the file
+	e.g.:
+		- save a file in the folder scripts/migrations/save_my_table.sql
+		- command line would be: tools/migration/migration -f save_my_table.sql
+		- the out come of this operation would be a name change to scripts/migrations/<timestamp>-save-my-table.sql
+3 - able to run in an interactive mode to take text in to save to a file for normalization of name; this will ask you two questions:
+	- what is they sql you would like to save
+	- what name would you like to give it
 
 If migration (m) or file (f) is not set the application will go into interactive mode
 
-Connection to the db is provided by the application config file or you can manually send in the credentials
+Connection to the db is provided by the application config file (see config/config.go) or you can manually send in the credentials (see flags below)
 
-The directory structure can get set anywhere, you can either set it on the command line (see below) or provide a value for env var: {{.Name.Upper}}_MIGRATION_PATH, command line arg will override
+The directory structure can get located anywhere, you can either set its location through the command line (see flags below) or provide a value for env var: {{.ProjectFile.Name.Upper}}_MIGRATION_PATH, command line arg will override
 
-Note: this is very simplistic version of migration based on what is in Rails and ActiveRecord
-If you want something else look at: Atlas or SchemaHero
+Functionality (1) is performed every time cmd/rest/rest or cmd/grpc/grpc is started
+Functionality (2 and 3) is performed by compiling tool/migration/main.go and running that
 */
 
 func main() {
@@ -50,7 +56,7 @@ func main() {
 	flag.Parse()
 
 	if path == "" {
-		envPath := os.Getenv("{{.Name.Upper}}_MIGRATION_PATH")
+		envPath := os.Getenv("{{.ProjectFile.Name.Upper}}_MIGRATION_PATH")
 		if envPath == "" {
 			fmt.Println("Path is not set for scripts/migrations")
 			os.Exit(1)
@@ -81,7 +87,7 @@ func main() {
 		dbDB = db
 	}
 
-	// create conn str for mysql
+	// make sure the database is initialized, this will include the migration table
 	errVerify := mig.VerifyDBInit(dbDB, dbHost, dbUser, dbPass)
 	if errVerify != nil {
 		fmt.Printf("Error verifying DB initialization: %s\n", errVerify)

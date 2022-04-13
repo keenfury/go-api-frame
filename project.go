@@ -61,8 +61,8 @@ func (p *Project) CreateProjectFile() bool {
 	p.ProjectFile.Name.RawName = p.ProjectFile.AppName
 	p.ProjectFile.Name.NameConverter()
 	// ask for subdir
-	fmt.Print("Which sub folder to save endpoint files (v1, routes, etc)? ")
-	p.ProjectFile.SubDir = ParseInput(p.Reader)
+	// fmt.Print("Which sub folder to save endpoint files (v1, routes, etc)? ")
+	p.ProjectFile.SubDir = "internal/v1" // ParseInput(p.Reader)
 	// create projectpath and subpackage
 	goPath := os.Getenv("GOPATH")
 	if goPath == "" {
@@ -162,6 +162,7 @@ func (p *Project) ProcessTemplates() {
 					ep.SQLProviderConnection = fmt.Sprintf("%sConnection", MYSQL)
 					ep.MigrationVerify = MIGRATION_VERIFY_MYSQL
 					ep.MigrationConnection = MIGRATION_CONNECTION_MYSQL
+					ep.MigrationHeader = MIGRATION_VERIFY_HEADER_MYSQL
 					storageFiles = append(storageFiles, "mysql")
 				case "p":
 					ep.SQLProvider = POSTGRESQL
@@ -169,12 +170,14 @@ func (p *Project) ProcessTemplates() {
 					ep.SQLProviderConnection = fmt.Sprintf("%sConnection", POSTGRESQL)
 					ep.MigrationVerify = MIGRATION_VERIFY_POSTGRES
 					ep.MigrationConnection = MIGRATION_CONNECTION_POSTGRES
+					ep.MigrationHeader = MIGRATION_VERIFY_HEADER_POSTGRES
 					storageFiles = append(storageFiles, "psql")
 				case "s":
 					ep.SQLProvider = SQLITE3
 					ep.SQLProviderLower = SQLITE3LOWER
 					ep.SQLProviderConnection = fmt.Sprintf("%sConnection", SQLITE3)
 					ep.MigrationVerify = MIGRATION_VERIFY_SQLITE
+					ep.MigrationHeader = MIGRATION_VERIFY_HEADER_SQLITE
 					storageFiles = append(storageFiles, "sqlite")
 				}
 			case "f":

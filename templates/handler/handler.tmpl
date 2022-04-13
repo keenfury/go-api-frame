@@ -42,62 +42,68 @@ func (h *Handler{{.Camel}}) Get(c echo.Context) error {
 {{.HandlerGetDeleteAssign}}
 	{{.LowerCamel}} := &{{.Camel}}{ {{.HandlerArgSet}} }
 	if err := h.manager{{.Camel}}.Get({{.LowerCamel}}); err != nil {
-		be := err.(ae.ApiError).BodyError()
-		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+		apiError := err.(ae.ApiError)
+		be := apiError.BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(nil, &apiError))
 	}
-	return c.JSON(http.StatusOK, s.NewOutput(*{{.LowerCamel}}, true, 0, 0, 0))
+	return c.JSON(http.StatusOK, s.NewOutput(*{{.LowerCamel}}, nil))
 }
 
 func (h *Handler{{.Camel}}) List(c echo.Context) error {
 	{{.LowerCamel}}s := &[]{{.Camel}}{}
 	if err := h.manager{{.Camel}}.List({{.LowerCamel}}s); err != nil {
-		be := err.(ae.ApiError).BodyError()
-		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+		apiError := err.(ae.ApiError)
+		be := apiError.BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(nil, &apiError))
 	}
-	return c.JSON(http.StatusOK, s.NewOutput(*{{.LowerCamel}}s, true, 0, 0, 0))
+	return c.JSON(http.StatusOK, s.NewOutput(*{{.LowerCamel}}s, nil))
 }
 
 func (h *Handler{{.Camel}}) Post(c echo.Context) error {
 	{{.Abbr}} := &{{.Camel}}{}
 	if err := c.Bind({{.Abbr}}); err != nil {
 		bindErr := ae.BindError(err)
-		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), false, 0, 0, 0))
+		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), &bindErr))
 	}
 	if err := h.manager{{.Camel}}.Post({{.Abbr}}); err != nil {
-		be := err.(ae.ApiError).BodyError()
-		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+		apiError := err.(ae.ApiError)
+		be := apiError.BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(nil, &apiError))
 	}
-	return c.JSON(http.StatusOK, s.NewOutput(*{{.Abbr}}, true, 0 ,0, 0))
+	return c.JSON(http.StatusOK, s.NewOutput(*{{.Abbr}}, nil))
 }
 
 func (h *Handler{{.Camel}}) Put(c echo.Context) error {
 	{{.Abbr}} := &{{.Camel}}{}
 	if err := c.Bind({{.Abbr}}); err != nil {
 		bindErr := ae.BindError(err)
-		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), false, 0, 0, 0))
+		return c.JSON(bindErr.StatusCode, s.NewOutput(bindErr.BodyError(), &bindErr))
 	}
 	if err := h.manager{{.Camel}}.Put({{.Abbr}}); err != nil {
-		be := err.(ae.ApiError).BodyError()
-		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+		apiError := err.(ae.ApiError)
+		be := apiError.BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(nil, &apiError))
 	}
-	return c.JSON(http.StatusOK, s.NewOutput(*{{.Abbr}}, true, 0 ,0, 0))
+	return c.JSON(http.StatusOK, s.NewOutput(*{{.Abbr}}, nil))
 }
 
 func (h *Handler{{.Camel}}) Patch(c echo.Context) error {
 	body, _ := ioutil.ReadAll(c.Request().Body)
 	if err := h.manager{{.Camel}}.Patch(body); err != nil {
-		be := err.(ae.ApiError).BodyError()
-		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+		apiError := err.(ae.ApiError)
+		be := apiError.BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(nil, &apiError))
 	}
-	return c.JSON(http.StatusOK, s.NewOutput(struct{}{}, true, 0, 0, 0))
+	return c.JSON(http.StatusOK, s.NewOutput(struct{}{}, nil))
 }
 
 func (h *Handler{{.Camel}}) Delete(c echo.Context) error {
 {{.HandlerGetDeleteAssign}}
 	{{.LowerCamel}} := &{{.Camel}}{ {{.HandlerArgSet}} }
 	if err := h.manager{{.Camel}}.Delete({{.LowerCamel}}); err != nil {
-		be := err.(ae.ApiError).BodyError()
-		return c.JSON(be.StatusCode, s.NewOutput(be, false, 0, 0, 0))
+		apiError := err.(ae.ApiError)
+		be := apiError.BodyError()
+		return c.JSON(be.StatusCode, s.NewOutput(nil, &apiError))
 	}
-	return c.JSON(http.StatusOK, s.NewOutput(struct{}{}, true, 0, 0, 0))
+	return c.JSON(http.StatusOK, s.NewOutput(struct{}{}, nil))
 }

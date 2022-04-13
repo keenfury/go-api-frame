@@ -652,10 +652,14 @@ func (ep *EndPoint) BuildAPIHooks() {
 		for _, s := range split {
 			if string(s[0]) == "s" {
 				configLines = append(configLines, "StorageSQL = true")
-				configLines = append(configLines, "DBUser = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_USER\",\"\")")
-				configLines = append(configLines, "DBPass = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_PASS\", \"\")")
-				configLines = append(configLines, "DBDB = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_DB\", \"\")")
-				configLines = append(configLines, "DBHost = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_HOST\", \"\")")
+				if string(s[1]) == "p" || string(s[1]) == "m" {
+					configLines = append(configLines, "DBUser = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_USER\",\"\")")
+					configLines = append(configLines, "DBPass = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_PASS\", \"\")")
+					configLines = append(configLines, "DBDB = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_DB\", \"\")")
+					configLines = append(configLines, "DBHost = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_DB_HOST\", \"\")")
+				} else {
+					configLines = append(configLines, "SqlitePath = getEnvOrDefault(\"{{.ProjectFile.Name.EnvVar}}_SQLITE_PATH\",\"\")")
+				}
 			}
 			if string(s[0]) == "f" {
 				configLines = append(configLines, "StorageFile = true")

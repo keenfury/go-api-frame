@@ -8,8 +8,7 @@ import (
 )
 
 func storageMenu(reader *bufio.Reader) (bool, bool, string) {
-	msg := "Would you like to use an ORM? "
-	useORM := AskYesOrNo(reader, msg)
+	useORM := false
 	storage := []string{}
 	messages := []string{"SQL Options", "Choice which SQL implementation"}
 	prompts := []string{"(P)ostgres", "(M)ysql", "(S)qlite3"}
@@ -17,6 +16,7 @@ func storageMenu(reader *bufio.Reader) (bool, bool, string) {
 	exitEarly := false
 StorageLoop:
 	for {
+		fmt.Println("")
 		fmt.Println("Storage Types")
 		fmt.Println("Enter choices on one line with spaces between choices")
 		fmt.Println("")
@@ -62,6 +62,8 @@ StorageLoop:
 						break StorageLoop
 					}
 					storage = append(storage, "s"+sqlType)
+					msg := "Would you like to use GORM (y/n)? "
+					useORM = AskYesOrNo(reader, msg)
 				} else {
 					storage = append(storage, k)
 				}
@@ -75,8 +77,8 @@ StorageLoop:
 	}
 
 	fmt.Println("")
-	msg = "Would you like to save these SQL options for the project? "
-	save := AskYesOrNo(reader, msg)
+	// msg := "Would you like to save these SQL options for the project? "
+	save := true // AskYesOrNo(reader, msg)
 	return useORM, save, strings.Join(storage, " ")
 }
 
