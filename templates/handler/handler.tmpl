@@ -31,7 +31,7 @@ func NewHandler{{.Camel}}(m{{.Abbr}} Manager{{.Camel}}Adapter) *Handler{{.Camel}
 
 func (h *Handler{{.Camel}}) Load{{.Camel}}Routes(eg *echo.Group) {
 	eg.GET("/{{.AllLower}}/{{.HandlerGetDeleteUrl}}", h.Get)
-	eg.GET("/{{.AllLower}}/list", h.List)
+	eg.GET("/{{.AllLower}}", h.List)
 	eg.POST("/{{.AllLower}}", h.Post)
 	eg.PUT("/{{.AllLower}}", h.Put)
 	eg.PATCH("/{{.AllLower}}", h.Patch)
