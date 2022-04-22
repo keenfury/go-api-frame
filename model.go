@@ -74,6 +74,8 @@ type (
 		MigrationVerify        string
 		MigrationConnection    string
 		MigrationHeader        string
+		GrpcTranslateIn        string
+		GrpcTranslateOut       string
 		Name
 		ProjectFile
 	}

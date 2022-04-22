@@ -127,9 +127,9 @@ func translateOut({{.Abbr}} *{{.Camel}}) (*p.{{.Camel}}, error) {
 	return &proto{{.Camel}}, nil
 }
 
-func translateIn(po *p.{{.Camel}}) (*{{.Camel}}, error) {
+func translateIn(in *p.{{.Camel}}) (*{{.Camel}}, error) {
 	{{.Abbr}} := {{.Camel}}{}
-	outBytes, err := json.Marshal(po)
+	outBytes, err := json.Marshal(in)
 	if err != nil {
 		return &{{.Abbr}}, ae.GeneralError("Unable to encode from proto.{{.Camel}}", err)
 	}
@@ -137,5 +137,18 @@ func translateIn(po *p.{{.Camel}}) (*{{.Camel}}, error) {
 	if err != nil {
 		return &{{.Abbr}}, ae.GeneralError("Unable to decode to {{.Camel}}", err)
 	}
+	return &{{.Abbr}}, nil
+}
+
+// these functions are provided if the 'json' struct tags are not the same between the grpc and internal struct
+func translateDirectOut({{.Abbr}} *{{.Camel}}) (*p.{{.Camel}}, error) {
+	proto{{.Camel}} := p.{{.Camel}}{}
+	{{.GrpcTranslateOut}}
+	return &proto{{.Camel}}, nil
+}
+
+func translateDirectIn(in *p.{{.Camel}}) (*{{.Camel}}, error) {
+	{{.Abbr}} := {{.Camel}}{}
+	{{.GrpcTranslateIn}}
 	return &{{.Abbr}}, nil
 }
